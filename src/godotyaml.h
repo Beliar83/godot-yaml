@@ -1,18 +1,18 @@
-#ifndef GODOT_YAML_H
-#define GODOT_YAML_H
+#ifndef GODOTYAML_H
+#define GODOTYAML_H
 
 #include <Godot.hpp>
 
 namespace godot {
 
-class _YAML;
+class YAML;
 
 class YAMLParseResult : public godot::GodotScript<Reference> {
     GODOT_CLASS(YAMLParseResult)
 
 private:
 
-	friend class _YAML;
+	friend class YAML;
 
 	Error error;
 	String error_string;
@@ -40,14 +40,14 @@ public:
 
 };
 
-class _YAML : public godot::GodotScript<Reference> {
+class YAML : public godot::GodotScript<Reference> {
     GODOT_CLASS(YAML)
 
 public:
     static void _register_methods();
 
-    _YAML();
-    ~_YAML();
+    YAML();
+    ~YAML();
 
 	String print(Variant p_value);
 };

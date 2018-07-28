@@ -49,23 +49,22 @@ Variant YAMLParseResult::get_result() const {
 }
 
 
-void _YAML::_register_methods() {
-    register_method("print", &_YAML::print);
+void godot::YAML::_register_methods() {
+    register_method("print", &godot::YAML::print);
 }
 
-_YAML::_YAML()  {
+godot::YAML::YAML()  {
     // initialize any variables here
 }
 
-_YAML::~_YAML()  {
+godot::YAML::~YAML()  {
     // add your cleanup here
 }
 
-String _YAML::print(Variant p_value) {
-    YAML::Node node;
+String godot::YAML::print(Variant p_value) {
+    ::YAML::Node node;
     node.push_back(p_value);
     std::stringstream yaml;
     yaml << node;
     return String(yaml.str().c_str());
 }
-

@@ -14,6 +14,6 @@ Vector3 decode_vector3(const Node& node);
 template<>
 struct convert<Variant> {
     static Node encode(const Variant& rhs);
-    static bool decode(const YAML::Node& node, Variant& variant);
+    static bool decode(const Node& node, Variant& variant);
 };
 }
