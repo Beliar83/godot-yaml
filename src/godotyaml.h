@@ -50,6 +50,7 @@ public:
     ~YAML();
 
 	String print(Variant p_value);
+	Variant parse(String text);
 };
 
 }

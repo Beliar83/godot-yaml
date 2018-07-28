@@ -49,6 +49,9 @@ Node convert<Variant>::encode(const Variant& rhs){
     node.SetTag(oss.str());
     switch (var_type)
     {
+        case Variant::Type::NIL:
+            node.push_back("null");
+            break;
         case Variant::Type::VECTOR2:
             encode_vector2(node, rhs);
             break;
@@ -61,17 +64,18 @@ Node convert<Variant>::encode(const Variant& rhs){
 
 bool convert<Variant>::decode(const YAML::Node& node, Variant& variant)
 {
-    std::regex type_expression(R"(Godot(?:\/(\w+))+)");
+    std::regex type_expression(R"((?:\/)?(\w+))");
     std::string search = node.Tag();
     std::sregex_iterator pos(search.begin(), search.end(), type_expression);        
     std::vector<std::string> tokens;
     std::sregex_iterator end;
     for (; pos != end; ++pos)
     {
-        tokens.push_back(pos->str(0));
+        tokens.push_back(pos->str(1));
     }
     if (tokens.empty())
     {
+        ::Godot::print("No tokens");
         return false;
     }
     if (tokens[0] == "Godot")
@@ -81,6 +85,9 @@ bool convert<Variant>::decode(const YAML::Node& node, Variant& variant)
             auto var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
             switch (var_type)
             {
+                case Variant::Type::NIL:
+                    variant = Variant();
+                    break;
                 case Variant::Type::VECTOR2:
                     variant = decode_vector2(node);
                     break;

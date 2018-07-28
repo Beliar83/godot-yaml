@@ -51,6 +51,7 @@ Variant YAMLParseResult::get_result() const {
 
 void godot::YAML::_register_methods() {
     register_method("print", &godot::YAML::print);
+    register_method("parse", &godot::YAML::parse);
 }
 
 godot::YAML::YAML()  {
@@ -67,4 +68,18 @@ String godot::YAML::print(Variant p_value) {
     std::stringstream yaml;
     yaml << node;
     return String(yaml.str().c_str());
+}
+
+Variant godot::YAML::parse(String text) {
+    ::Godot::print(text);
+    ::YAML::Node node = ::YAML::Load(text.alloc_c_string());
+    try
+    {
+        return node[0].as<Variant>();
+    }
+    catch (::YAML::TypedBadConversion<Variant> err)
+    {
+        ::Godot::print(err.msg.c_str());
+        return Variant();
+    }
 }
