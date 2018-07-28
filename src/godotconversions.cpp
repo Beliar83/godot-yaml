@@ -24,6 +24,14 @@ void encode_vector3(Node& node, const Vector3& vec3)
     node.push_back(vec3.z);
 }
 
+void encode_array(Node& node, const Array& arr)
+{
+    for (int i=0; i < arr.size(); ++i)
+    {
+        node.push_back(arr[i]);
+    }
+}
+
 Vector2 decode_vector2(const Node& node)
 {
     Vector2 rhs;
@@ -39,6 +47,16 @@ Vector3 decode_vector3(const Node& node)
     rhs.y = node[1].as<real_t>();
     rhs.z = node[2].as<real_t>();
     return rhs;
+}
+
+Array decode_array(const Node& node)
+{
+    Array retval;
+    for (YAML::const_iterator child = node.begin(); child != node.end(); ++child)
+    {
+        retval.push_back(child->as<Variant>());
+    }
+    return retval;
 }
 
 Node convert<Variant>::encode(const Variant& rhs){
@@ -57,6 +75,9 @@ Node convert<Variant>::encode(const Variant& rhs){
             break;
         case Variant::Type::VECTOR3:
             encode_vector3(node, rhs);
+            break;
+        case Variant::Type::ARRAY:
+            encode_array(node, rhs);
             break;
     }
     return node;
@@ -93,6 +114,9 @@ bool convert<Variant>::decode(const YAML::Node& node, Variant& variant)
                     break;
                 case Variant::Type::VECTOR3:
                     variant = decode_vector3(node);
+                    break;
+                case Variant::Type::ARRAY:
+                    variant = decode_array(node);
                     break;
             }
             return true;

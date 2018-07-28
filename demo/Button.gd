@@ -18,4 +18,12 @@ func _ready():
 func _on_Button_pressed():
     print(rect_position)
     #JSON.print(rect_position)
-    print(yaml.print(rect_position))
+    var yaml_file = File.new()
+    yaml_file.open("res://test.yaml", File.WRITE)
+    yaml_file.store_line(yaml.print([rect_position, null,]))
+    yaml_file.close()
+    yaml_file.open("res://test.yaml", File.READ)
+    var test = yaml.parse(yaml_file.get_as_text())
+    yaml_file.close()
+    print(test)
+    
