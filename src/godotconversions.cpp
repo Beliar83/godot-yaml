@@ -118,6 +118,11 @@ bool convert<Variant>::decode(const YAML::Node& node, Variant& variant)
                 case Variant::Type::ARRAY:
                     variant = decode_array(node);
                     break;
+                default:
+                    std::stringstream message;
+                    message << "Variant type " << var_type << " not yet supported";
+                    Godot::print(message.str().c_str());
+                    return false;
             }
             return true;
         }
