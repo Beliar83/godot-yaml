@@ -20,7 +20,7 @@ func _on_Button_pressed():
     #JSON.print(rect_position)
     var yaml_file = File.new()
     yaml_file.open("res://test.yaml", File.WRITE)
-    yaml_file.store_line(yaml.print([rect_position, null]))
+    yaml_file.store_line(yaml.print([rect_position, null, PoolIntArray([1,2,3,4])]))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)
     var test = yaml.parse(yaml_file.get_as_text())

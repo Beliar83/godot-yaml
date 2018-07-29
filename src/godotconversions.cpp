@@ -49,14 +49,13 @@ Vector3 decode_vector3(const Node& node)
     return rhs;
 }
 
-Array decode_array(const Node& node)
+
+void decode_array(const Node& node, Array& array)
 {
-    Array retval;
     for (YAML::const_iterator child = node.begin(); child != node.end(); ++child)
     {
-        retval.push_back(child->as<Variant>());
+        array.push_back(child->as<Variant>());
     }
-    return retval;
 }
 
 Node convert<Variant>::encode(const Variant& rhs){
@@ -67,17 +66,26 @@ Node convert<Variant>::encode(const Variant& rhs){
     node.SetTag(oss.str());
     switch (var_type)
     {
-        case Variant::Type::NIL:
-            node.push_back("null");
+        case Variant::NIL:
+            node.push_back(Null);
             break;
-        case Variant::Type::VECTOR2:
+        case Variant::VECTOR2:
             encode_vector2(node, rhs);
             break;
-        case Variant::Type::VECTOR3:
+        case Variant::VECTOR3:
             encode_vector3(node, rhs);
             break;
-        case Variant::Type::ARRAY:
+		case Variant::POOL_INT_ARRAY:
+		case Variant::POOL_REAL_ARRAY:
+		case Variant::POOL_STRING_ARRAY:
+        case Variant::ARRAY:
             encode_array(node, rhs);
+            break;
+        case Variant::INT:
+            node.push_back((int)rhs);
+            break;
+        case Variant::REAL:
+            node.push_back((double)rhs);
             break;
     }
     return node;
@@ -106,23 +114,61 @@ bool convert<Variant>::decode(const YAML::Node& node, Variant& variant)
             auto var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
             switch (var_type)
             {
-                case Variant::Type::NIL:
-                    variant = Variant();
+                case Variant::NIL:
+                    {
+                        variant = Variant();
+                    }
                     break;
-                case Variant::Type::VECTOR2:
-                    variant = decode_vector2(node);
-                    break;
-                case Variant::Type::VECTOR3:
-                    variant = decode_vector3(node);
-                    break;
-                case Variant::Type::ARRAY:
-                    variant = decode_array(node);
-                    break;
+                case Variant::VECTOR2:
+                    {
+                        variant = decode_vector2(node);
+                        break;
+                    }
+                case Variant::VECTOR3:
+                    {
+                        variant = decode_vector3(node);
+                        break;
+                    }
+                case Variant::POOL_INT_ARRAY:
+                    {
+                        variant = godot::PoolIntArray();
+                    }
+                case Variant::POOL_REAL_ARRAY:
+                    {
+                        variant = godot::PoolRealArray();
+                    }
+                case Variant::POOL_STRING_ARRAY:
+                    {
+                        variant = godot::PoolStringArray();
+                    }
+                case Variant::ARRAY:
+                    {
+                        if (variant.get_type() == Variant::NIL)
+                        {
+                            variant = Array();
+                        }
+                        godot::Array array = (Array)variant;
+                        decode_array(node, array);
+                        variant = array;
+                        break;
+                    }
+                case Variant::INT:
+                    {
+                        variant = node[0].as<int64_t>();
+                        break;
+                    }
+                case Variant::REAL:
+                    {
+                        variant = node[0].as<double>();
+                        break;
+                    }
                 default:
-                    std::stringstream message;
-                    message << "Variant type " << var_type << " not yet supported";
-                    Godot::print(message.str().c_str());
-                    return false;
+                    {
+                        std::stringstream message;
+                        message << "Variant type " << var_type << " not yet supported";
+                        Godot::print(message.str().c_str());
+                        return false;
+                    }
             }
             return true;
         }
