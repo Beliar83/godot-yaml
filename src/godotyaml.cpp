@@ -19,7 +19,7 @@ godot::YAML::~YAML() {
 
 String godot::YAML::print(Variant p_value) {
 	::YAML::Node node;
-	node.push_back(p_value);
+	node = p_value;
 	std::stringstream yaml;
 	yaml << node;
 	return String(yaml.str().c_str());
@@ -29,7 +29,7 @@ Variant godot::YAML::parse(String text) {
 	::Godot::print(text);
 	::YAML::Node node = ::YAML::Load(text.alloc_c_string());
 	try {
-		return node[0].as<Variant>();
+		return node.as<Variant>();
 	} catch (::YAML::TypedBadConversion<Variant> err) {
 		std::stringstream error_string;
 		error_string << "Error parsing yaml: " << err.msg << " at "

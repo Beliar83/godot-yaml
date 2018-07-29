@@ -12,14 +12,14 @@ using namespace godot;
 namespace YAML {
 
 void encode_vector2(Node &node, const Vector2 &vec2) {
-	node.push_back(vec2.x);
-	node.push_back(vec2.y);
+	node["x"] = vec2.x;
+	node["y"] = vec2.y;
 }
 
 void encode_vector3(Node &node, const Vector3 &vec3) {
-	node.push_back(vec3.x);
-	node.push_back(vec3.y);
-	node.push_back(vec3.z);
+	node["x"] = vec3.x;
+	node["y"] = vec3.y;
+	node["z"] = vec3.z;
 }
 
 void encode_array(Node &node, const Array &arr) {
@@ -30,16 +30,16 @@ void encode_array(Node &node, const Array &arr) {
 
 Vector2 decode_vector2(const Node &node) {
 	Vector2 rhs;
-	rhs.x = node[0].as<real_t>();
-	rhs.y = node[1].as<real_t>();
+	rhs.x = node["x"].as<real_t>();
+	rhs.y = node["y"].as<real_t>();
 	return rhs;
 }
 
 Vector3 decode_vector3(const Node &node) {
 	Vector3 rhs;
-	rhs.x = node[0].as<real_t>();
-	rhs.y = node[1].as<real_t>();
-	rhs.z = node[2].as<real_t>();
+	rhs.x = node["x"].as<real_t>();
+	rhs.y = node["y"].as<real_t>();
+	rhs.z = node["z"].as<real_t>();
 	return rhs;
 }
 
@@ -54,33 +54,47 @@ Node convert<Variant>::encode(const Variant &rhs) {
 	std::ostringstream oss;
 	Variant::Type var_type = rhs.get_type();
 	oss << "Godot/Variant/" << var_type;
-	node.SetTag(oss.str());
+	bool needsTag = false;
 	switch (var_type) {
-		case Variant::NIL:
-			node.push_back(Null);
+		case Variant::NIL: {
+			node = Null;
 			break;
-		case Variant::VECTOR2:
+		}
+		case Variant::VECTOR2: {
+			needsTag = true;
 			encode_vector2(node, rhs);
 			break;
-		case Variant::VECTOR3:
+		}
+		case Variant::VECTOR3: {
+			needsTag = true;
 			encode_vector3(node, rhs);
 			break;
+		}
 		case Variant::POOL_INT_ARRAY:
 		case Variant::POOL_REAL_ARRAY:
 		case Variant::POOL_STRING_ARRAY:
-		case Variant::ARRAY:
+			// Pool arrays need a tag to correctly decode them as a pool.
+			needsTag = true;
+		case Variant::ARRAY: {
 			encode_array(node, rhs);
 			break;
-		case Variant::INT:
-			node.push_back((int)rhs);
+		}
+		case Variant::INT: {
+			node = (int)rhs;
 			break;
-		case Variant::REAL:
-			node.push_back((double)rhs);
+		}
+		case Variant::REAL: {
+			node = (double)rhs;
 			break;
-		case Variant::STRING:
+		}
+		case Variant::STRING: {
 			String string = (String)rhs;
-			node.push_back(string.alloc_c_string());
+			node = string.alloc_c_string();
 			break;
+		}
+	}
+	if (needsTag) {
+		node.SetTag(oss.str());
 	}
 	return node;
 }
@@ -120,8 +134,6 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::POOL_STRING_ARRAY: {
 						variant = godot::PoolStringArray();
-					}
-					case Variant::ARRAY: {
 						if (variant.get_type() == Variant::NIL) {
 							variant = Array();
 						}
@@ -131,15 +143,15 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 						break;
 					}
 					case Variant::INT: {
-						variant = node[0].as<int64_t>();
+						variant = node.as<int64_t>();
 						break;
 					}
 					case Variant::REAL: {
-						variant = node[0].as<double>();
+						variant = node.as<double>();
 						break;
 					}
 					case Variant::STRING: {
-						variant = String(node[0].as<std::string>().c_str());
+						variant = String(node.as<std::string>().c_str());
 						break;
 					}
 					default: {
