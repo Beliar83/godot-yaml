@@ -26,7 +26,6 @@ String godot::YAML::print(Variant p_value) {
 }
 
 Variant godot::YAML::parse(String text) {
-	::Godot::print(text);
 	::YAML::Node node = ::YAML::Load(text.alloc_c_string());
 	try {
 		return node.as<Variant>();

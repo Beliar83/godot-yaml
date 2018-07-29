@@ -92,6 +92,10 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			node = string.alloc_c_string();
 			break;
 		}
+		case Variant::BOOL: {
+			node = (bool)rhs;
+			break;
+		}
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());
@@ -189,6 +193,11 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 		// Godot::print("Determined: Real");
 		return true;
 	} catch (::YAML::TypedBadConversion<double> err) {
+	}
+	try {
+		variant = node.as<bool>();
+		return true;
+	} catch (::YAML::TypedBadConversion<bool> err) {
 	}
 	// Probably catches anything else (except empty values)
 	try {
