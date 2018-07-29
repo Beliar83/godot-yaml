@@ -6,18 +6,18 @@
 namespace godot {
 
 class YAML : public godot::GodotScript<Reference> {
-    GODOT_CLASS(YAML)
+	GODOT_CLASS(YAML)
 
 public:
-    static void _register_methods();
+	static void _register_methods();
 
-    YAML();
-    ~YAML();
+	YAML();
+	~YAML();
 
 	String print(Variant p_value);
 	Variant parse(String text);
 };
 
-}
+} // namespace godot
 
 #endif
