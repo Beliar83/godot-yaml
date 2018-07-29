@@ -28,6 +28,16 @@ void encode_array(Node &node, const Array &arr) {
 	}
 }
 
+void encode_dictionary(Node &node, const Dictionary &dict) {
+	Array keys = dict.keys();
+	Array values = dict.values();
+	for (int i = 0; i < keys.size(); ++i) {
+		Variant key = keys[i];
+		Variant value = values[i];
+		node[key] = value;
+	}
+}
+
 Vector2 decode_vector2(const Node &node) {
 	Vector2 rhs;
 	rhs.x = node["x"].as<real_t>();
@@ -47,6 +57,16 @@ void decode_array(const Node &node, Array &array) {
 	for (YAML::const_iterator child = node.begin(); child != node.end(); ++child) {
 		array.push_back(child->as<Variant>());
 	}
+}
+
+Dictionary decode_dictionary(const Node &node) {
+	Dictionary dict;
+	std::map<Variant, Variant> map = node.as<std::map<Variant, Variant>>();
+	typedef std::map<Variant, Variant>::const_iterator it_type;
+	for (it_type iterator = map.begin(); iterator != map.end(); ++iterator) {
+		dict[iterator->first] = iterator->second;
+	}
+	return dict;
 }
 
 Node convert<Variant>::encode(const Variant &rhs) {
@@ -94,6 +114,9 @@ Node convert<Variant>::encode(const Variant &rhs) {
 		}
 		case Variant::BOOL: {
 			node = (bool)rhs;
+		}
+		case Variant::DICTIONARY: {
+			encode_dictionary(node, rhs);
 			break;
 		}
 	}
@@ -180,6 +203,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 		variant = Array();
 		// Godot::print("Determined: Array");
 		decode_array(node, (Array)variant);
+		return true;
+	}
+	if (node.IsMap()) {
+		variant = decode_dictionary(node);
 		return true;
 	}
 	try {

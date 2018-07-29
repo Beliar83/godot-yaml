@@ -27,6 +27,11 @@ func _on_Button_pressed():
     arr.append(!true)
     arr.append([1,2,3,4,5])
     arr.append("Godot")
+    var dict = Dictionary()
+    dict[true] = 1
+    dict["a"] = false
+    dict[5] = 23
+    arr.append(dict)
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)
