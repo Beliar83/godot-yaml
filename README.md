@@ -7,6 +7,6 @@ It uses yaml-cpp (https://github.com/jbeder/yaml-cpp).
 
 # How to Build
 - Build yaml-cpp
-- Put the yaml-cpp libraries in <godot-yaml>/yaml-cpp
+- Put the yaml-cpp libraries in (godot-yaml)/yaml-cpp
 - Make sure you have pulled the godot-cpp module (with all its modules)
 - run scons
