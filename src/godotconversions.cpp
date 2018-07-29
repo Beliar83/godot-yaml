@@ -77,6 +77,10 @@ Node convert<Variant>::encode(const Variant &rhs) {
 		case Variant::REAL:
 			node.push_back((double)rhs);
 			break;
+		case Variant::STRING:
+			String string = (String)rhs;
+			node.push_back(string.alloc_c_string());
+			break;
 	}
 	return node;
 }
@@ -134,6 +138,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 				}
 				case Variant::REAL: {
 					variant = node[0].as<double>();
+					break;
+				}
+				case Variant::STRING: {
+					variant = String(node[0].as<std::string>().c_str());
 					break;
 				}
 				default: {
