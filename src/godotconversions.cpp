@@ -22,6 +22,11 @@ void encode_vector3(Node &node, const Vector3 &vec3) {
 	node["z"] = vec3.z;
 }
 
+void encode_rect2(Node &node, const Rect2 &rec2) {
+	node["pos"] = static_cast<Variant>(rec2.pos);
+	node["size"] = static_cast<Variant>(rec2.size);
+}
+
 void encode_array(Node &node, const Array &arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		node.push_back(arr[i]);
@@ -51,6 +56,12 @@ Vector3 decode_vector3(const Node &node) {
 	rhs.y = node["y"].as<real_t>();
 	rhs.z = node["z"].as<real_t>();
 	return rhs;
+}
+
+Rect2 decode_rect2(const Node &node) {
+	Vector2 pos = node["pos"].as<Variant>();
+	Vector2 size = node["size"].as<Variant>();
+	return Rect2(pos, size);
 }
 
 void decode_array(const Node &node, Array &array) {
@@ -119,6 +130,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			encode_dictionary(node, rhs);
 			break;
 		}
+		case Variant::RECT2: {
+			encode_rect2(node, rhs);
+			needsTag = true;
+			break;
+		}
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());
@@ -181,6 +197,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 						variant = String(node.as<std::string>().c_str());
 						break;
 					}
+					case Variant::RECT2: {
+						variant = decode_rect2(node);
+						break;
+					}
 					default: {
 						std::stringstream message;
 						message << "Variant type " << var_type << " not yet supported";
@@ -191,7 +211,7 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 				return true;
 			}
 			return false;
-		}
+		} // namespace YAML
 	}
 	// Try to determine the type, first match will return, so order will matter.
 	if (node.IsNull()) {

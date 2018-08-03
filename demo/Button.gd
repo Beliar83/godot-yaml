@@ -32,6 +32,10 @@ func _on_Button_pressed():
     dict["a"] = false
     dict[5] = 23
     arr.append(dict)
+    var rect = Rect2()
+    rect.position = Vector2(1,2)
+    rect.size = Vector2(5, 10)
+    arr.append(rect)
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)
