@@ -40,6 +40,10 @@ func _on_Button_pressed():
     aabb.position = Vector3(1,2,3)
     aabb.size = Vector3(5, 10, 15)
     arr.append(aabb)
+    arr.append(Transform2D(deg2rad(0), Vector2(1, 5)))
+    arr.append(Transform2D(deg2rad(90), Vector2(1, 5)))
+    arr.append(Transform2D(deg2rad(180), Vector2(1, 5)))
+    arr.append(Transform2D(deg2rad(270), Vector2(1, 5)))
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)
@@ -47,4 +51,3 @@ func _on_Button_pressed():
     yaml_file.close()
     print(arr)
     print(test)
-    

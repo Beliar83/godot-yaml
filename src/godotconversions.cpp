@@ -32,6 +32,12 @@ void encode_aabb(Node &node, const AABB &aabb) {
 	node["size"] = static_cast<Variant>(aabb.size);
 }
 
+void encode_transform2d(Node &node, const Transform2D &transf2d) {
+	node["x_axis"] = static_cast<Variant>(transf2d.elements[0]);
+	node["y_axis"] = static_cast<Variant>(transf2d.elements[1]);
+	node["origin"] = static_cast<Variant>(transf2d.elements[2]);
+}
+
 void encode_array(Node &node, const Array &arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		node.push_back(arr[i]);
@@ -73,6 +79,13 @@ AABB decode_aabb(const Node &node) {
 	Vector3 pos = node["pos"].as<Variant>();
 	Vector3 size = node["size"].as<Variant>();
 	return AABB(pos, size);
+}
+
+Transform2D decode_transform2d(const Node &node) {
+	Vector2 x_axis = node["x_axis"].as<Variant>();
+	Vector2 y_axis = node["y_axis"].as<Variant>();
+	Vector2 origin = node["origin"].as<Variant>();
+	return Transform2D(x_axis.x, x_axis.y, y_axis.x, y_axis.y, origin.x, origin.y);
 }
 
 void decode_array(const Node &node, Array &array) {
@@ -150,6 +163,10 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			encode_aabb(node, rhs);
 			needsTag = true;
 			break;
+			case Variant::TRANSFORM2D: {
+				encode_transform2d(node, rhs);
+				needsTag = true;
+			}
 		}
 	}
 	if (needsTag) {
@@ -221,6 +238,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::RECT3: {
 						variant = decode_aabb(node);
+						break;
+					}
+					case Variant::TRANSFORM2D: {
+						variant = decode_transform2d(node);
 						break;
 					}
 					default: {
