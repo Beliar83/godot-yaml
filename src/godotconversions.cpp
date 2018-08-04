@@ -85,6 +85,11 @@ void encode_color(Node &node, const Color &color) {
 	node["a"] = static_cast<Variant>(color.a);
 }
 
+void encode_node_path(Node &node, const NodePath &node_path) {
+	godot::String string_path = node_path;
+	node = static_cast<Variant>(string_path);
+}
+
 Vector2 decode_vector2(const Node &node) {
 	Vector2 rhs;
 	rhs.x = node["x"].as<real_t>();
@@ -174,6 +179,10 @@ Color decode_color(const Node &node) {
 	}
 }
 
+NodePath decode_node_path(const Node &node) {
+	return NodePath(godot::String(node.as<std::string>().c_str()));
+}
+
 Node convert<Variant>::encode(const Variant &rhs) {
 	YAML::Node node;
 	std::ostringstream oss;
@@ -261,6 +270,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 		}
 		case Variant::COLOR: {
 			encode_color(node, rhs);
+			needsTag = true;
+			break;
+		}
+		case Variant::NODE_PATH: {
+			encode_node_path(node, rhs);
 			needsTag = true;
 			break;
 		}
@@ -358,6 +372,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::COLOR: {
 						variant = decode_color(node);
+						break;
+					}
+					case Variant::NODE_PATH: {
+						variant = decode_node_path(node);
 						break;
 					}
 					default: {
