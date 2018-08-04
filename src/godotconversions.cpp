@@ -86,8 +86,7 @@ void encode_color(Node &node, const Color &color) {
 }
 
 void encode_node_path(Node &node, const NodePath &node_path) {
-	godot::String string_path = node_path;
-	node = static_cast<Variant>(string_path);
+	node = static_cast<Variant>(godot::String(node_path));
 }
 
 Vector2 decode_vector2(const Node &node) {
