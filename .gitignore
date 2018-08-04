@@ -1,0 +1,13 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/godot_yaml/v15
+/Debug
+/demo/test.yaml
+/demo/test.json
+/*.vcxproj.user
+/*.vcxproj.filters
+/*.vcxproj
+/*.sln
+/x64/Debug
