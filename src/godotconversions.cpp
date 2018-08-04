@@ -78,6 +78,13 @@ void encode_dictionary(Node &node, const Dictionary &dict) {
 	}
 }
 
+void encode_color(Node &node, const Color &color) {
+	node["r"] = static_cast<Variant>(color.r);
+	node["g"] = static_cast<Variant>(color.g);
+	node["b"] = static_cast<Variant>(color.b);
+	node["a"] = static_cast<Variant>(color.a);
+}
+
 Vector2 decode_vector2(const Node &node) {
 	Vector2 rhs;
 	rhs.x = node["x"].as<real_t>();
@@ -153,6 +160,18 @@ Dictionary decode_dictionary(const Node &node) {
 		dict[iterator->first] = iterator->second;
 	}
 	return dict;
+}
+
+Color decode_color(const Node &node) {
+	real_t r = node["r"].as<Variant>();
+	real_t g = node["g"].as<Variant>();
+	real_t b = node["b"].as<Variant>();
+	if (node["a"]) {
+		real_t a = node["a"].as<Variant>();
+		return Color(r, g, b, a);
+	} else {
+		return Color(r, g, b);
+	}
 }
 
 Node convert<Variant>::encode(const Variant &rhs) {
@@ -237,6 +256,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 		}
 		case Variant::BASIS: {
 			encode_basis(node, rhs);
+			needsTag = true;
+			break;
+		}
+		case Variant::COLOR: {
+			encode_color(node, rhs);
 			needsTag = true;
 			break;
 		}
@@ -330,6 +354,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::BASIS: {
 						variant = decode_basis(node);
+						break;
+					}
+					case Variant::COLOR: {
+						variant = decode_color(node);
 						break;
 					}
 					default: {
