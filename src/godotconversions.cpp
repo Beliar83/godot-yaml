@@ -38,6 +38,11 @@ void encode_transform2d(Node &node, const Transform2D &transf2d) {
 	node["origin"] = static_cast<Variant>(transf2d.elements[2]);
 }
 
+void encode_plane(Node &node, const Plane &plane) {
+	node["normal"] = static_cast<Variant>(plane.normal);
+	node["d"] = static_cast<Variant>(plane.d);
+}
+
 void encode_array(Node &node, const Array &arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		node.push_back(arr[i]);
@@ -86,6 +91,12 @@ Transform2D decode_transform2d(const Node &node) {
 	Vector2 y_axis = node["y_axis"].as<Variant>();
 	Vector2 origin = node["origin"].as<Variant>();
 	return Transform2D(x_axis.x, x_axis.y, y_axis.x, y_axis.y, origin.x, origin.y);
+}
+
+Plane decode_plane(const Node &node) {
+	float d = node["d"].as<Variant>();
+	Vector3 normal = node["normal"].as<Variant>();
+	return Plane(normal, d);
 }
 
 void decode_array(const Node &node, Array &array) {
@@ -169,6 +180,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			needsTag = true;
 			break;
 		}
+		case Variant::PLANE: {
+			encode_plane(node, rhs);
+			needsTag = true;
+			break;
+		}
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());
@@ -243,6 +259,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::TRANSFORM2D: {
 						variant = decode_transform2d(node);
+						break;
+					}
+					case Variant::PLANE: {
+						variant = decode_plane(node);
 						break;
 					}
 					default: {
