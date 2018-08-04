@@ -163,10 +163,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			encode_aabb(node, rhs);
 			needsTag = true;
 			break;
-			case Variant::TRANSFORM2D: {
-				encode_transform2d(node, rhs);
-				needsTag = true;
-			}
+		}
+		case Variant::TRANSFORM2D: {
+			encode_transform2d(node, rhs);
+			needsTag = true;
+			break;
 		}
 	}
 	if (needsTag) {
