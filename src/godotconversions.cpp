@@ -186,19 +186,21 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 						break;
 					}
 					case Variant::POOL_INT_ARRAY: {
-						variant = godot::PoolIntArray();
+						godot::Array array = Array();
+						decode_array(node, array);
+						variant = godot::PoolIntArray(array);
+						break;
 					}
 					case Variant::POOL_REAL_ARRAY: {
-						variant = godot::PoolRealArray();
+						godot::Array array = Array();
+						decode_array(node, array);
+						variant = godot::PoolRealArray(array);
+						break;
 					}
 					case Variant::POOL_STRING_ARRAY: {
-						variant = godot::PoolStringArray();
-						if (variant.get_type() == Variant::NIL) {
-							variant = Array();
-						}
-						godot::Array array = (Array)variant;
+						godot::Array array = Array();
 						decode_array(node, array);
-						variant = array;
+						variant = godot::PoolStringArray(array);
 						break;
 					}
 					case Variant::INT: {
