@@ -33,7 +33,7 @@ func _on_Button_pressed():
     dict[5] = 23
     arr.append(dict)
     var rect = Rect2()
-    rect.position = Vector2(1,2)
+    rect.position = Vector2(1, 2)
     rect.size = Vector2(5, 10)
     arr.append(rect)
     var aabb = AABB();
@@ -46,6 +46,7 @@ func _on_Button_pressed():
     arr.append(Transform2D(deg2rad(270), Vector2(1, 5)))
     arr.append(Plane(Vector3(1,2,3), 5))
     arr.append(Quat(1,2,3,4))
+    arr.append(Basis(Vector3(1,2,3), Vector3(4,5,6), Vector3(7,8,9)))
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)

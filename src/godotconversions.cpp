@@ -50,6 +50,13 @@ void encode_quat(Node &node, const Quat &quat) {
 	node["z"] = static_cast<Variant>(quat.z);
 }
 
+void encode_basis(Node &node, const Basis &basis) {
+	// Using basis.x, basis.y and basis.z leads to all 3 nodes being the same value.
+	node["x"] = static_cast<Variant>(basis.elements[0]);
+	node["y"] = static_cast<Variant>(basis.elements[1]);
+	node["z"] = static_cast<Variant>(basis.elements[2]);
+}
+
 void encode_array(Node &node, const Array &arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		node.push_back(arr[i]);
@@ -112,6 +119,13 @@ Quat decode_quat(const Node &node) {
 	float y = node["y"].as<Variant>();
 	float z = node["z"].as<Variant>();
 	return Quat(x, y, z, w);
+}
+
+Basis decode_basis(const Node &node) {
+	Vector3 x = node["x"].as<Variant>();
+	Vector3 y = node["y"].as<Variant>();
+	Vector3 z = node["z"].as<Variant>();
+	return Basis(x, y, z);
 }
 
 void decode_array(const Node &node, Array &array) {
@@ -205,6 +219,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			needsTag = true;
 			break;
 		}
+		case Variant::BASIS: {
+			encode_basis(node, rhs);
+			needsTag = true;
+			break;
+		}
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());
@@ -287,6 +306,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::QUAT: {
 						variant = decode_quat(node);
+						break;
+					}
+					case Variant::BASIS: {
+						variant = decode_basis(node);
 						break;
 					}
 					default: {
