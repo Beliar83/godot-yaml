@@ -277,6 +277,9 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			needsTag = true;
 			break;
 		}
+		default:
+			node = static_cast<Variant>(godot::String(rhs));
+			break;
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());

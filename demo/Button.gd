@@ -51,6 +51,7 @@ func _on_Button_pressed():
     arr.append(Transform(basis, Vector3(1,2,3)))
     arr.append(Color(0.25, 0.5, 0.75, 1.0))
     arr.append(self.get_path())
+    arr.append(self)
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)
