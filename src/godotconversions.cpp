@@ -43,6 +43,13 @@ void encode_plane(Node &node, const Plane &plane) {
 	node["d"] = static_cast<Variant>(plane.d);
 }
 
+void encode_quat(Node &node, const Quat &quat) {
+	node["w"] = static_cast<Variant>(quat.w);
+	node["x"] = static_cast<Variant>(quat.x);
+	node["y"] = static_cast<Variant>(quat.y);
+	node["z"] = static_cast<Variant>(quat.z);
+}
+
 void encode_array(Node &node, const Array &arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		node.push_back(arr[i]);
@@ -97,6 +104,14 @@ Plane decode_plane(const Node &node) {
 	float d = node["d"].as<Variant>();
 	Vector3 normal = node["normal"].as<Variant>();
 	return Plane(normal, d);
+}
+
+Quat decode_quat(const Node &node) {
+	float w = node["w"].as<Variant>();
+	float x = node["x"].as<Variant>();
+	float y = node["y"].as<Variant>();
+	float z = node["z"].as<Variant>();
+	return Quat(x, y, z, w);
 }
 
 void decode_array(const Node &node, Array &array) {
@@ -185,6 +200,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			needsTag = true;
 			break;
 		}
+		case Variant::QUAT: {
+			encode_quat(node, rhs);
+			needsTag = true;
+			break;
+		}
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());
@@ -263,6 +283,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::PLANE: {
 						variant = decode_plane(node);
+						break;
+					}
+					case Variant::QUAT: {
+						variant = decode_quat(node);
 						break;
 					}
 					default: {

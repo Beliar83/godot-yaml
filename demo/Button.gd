@@ -45,6 +45,7 @@ func _on_Button_pressed():
     arr.append(Transform2D(deg2rad(180), Vector2(1, 5)))
     arr.append(Transform2D(deg2rad(270), Vector2(1, 5)))
     arr.append(Plane(Vector3(1,2,3), 5))
+    arr.append(Quat(1,2,3,4))
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)
