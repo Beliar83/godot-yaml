@@ -36,6 +36,10 @@ func _on_Button_pressed():
     rect.position = Vector2(1,2)
     rect.size = Vector2(5, 10)
     arr.append(rect)
+    var aabb = AABB();
+    aabb.position = Vector3(1,2,3)
+    aabb.size = Vector3(5, 10, 15)
+    arr.append(aabb)
     yaml_file.store_line(yaml.print(arr))
     yaml_file.close()
     yaml_file.open("res://test.yaml", File.READ)

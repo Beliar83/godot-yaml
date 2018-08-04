@@ -27,6 +27,11 @@ void encode_rect2(Node &node, const Rect2 &rec2) {
 	node["size"] = static_cast<Variant>(rec2.size);
 }
 
+void encode_aabb(Node &node, const AABB &aabb) {
+	node["pos"] = static_cast<Variant>(aabb.position);
+	node["size"] = static_cast<Variant>(aabb.size);
+}
+
 void encode_array(Node &node, const Array &arr) {
 	for (int i = 0; i < arr.size(); ++i) {
 		node.push_back(arr[i]);
@@ -62,6 +67,12 @@ Rect2 decode_rect2(const Node &node) {
 	Vector2 pos = node["pos"].as<Variant>();
 	Vector2 size = node["size"].as<Variant>();
 	return Rect2(pos, size);
+}
+
+AABB decode_aabb(const Node &node) {
+	Vector3 pos = node["pos"].as<Variant>();
+	Vector3 size = node["size"].as<Variant>();
+	return AABB(pos, size);
 }
 
 void decode_array(const Node &node, Array &array) {
@@ -135,6 +146,11 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			needsTag = true;
 			break;
 		}
+		case Variant::RECT3: {
+			encode_aabb(node, rhs);
+			needsTag = true;
+			break;
+		}
 	}
 	if (needsTag) {
 		node.SetTag(oss.str());
@@ -199,6 +215,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 					}
 					case Variant::RECT2: {
 						variant = decode_rect2(node);
+						break;
+					}
+					case Variant::RECT3: {
+						variant = decode_aabb(node);
 						break;
 					}
 					default: {
