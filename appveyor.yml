@@ -16,7 +16,7 @@ configuration:
 environment:
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
-    - generator: "Visual Studio 15"  
+    - generator: Visual Studio 15
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7" 
 
