@@ -47,8 +47,8 @@ init:
   # Show version and architecture for Python
   - "%PYTHON%\\python.exe --version"
   - "%PYTHON%\\python.exe -c \"import struct; print(struct.calcsize('P') * 8)\""
-  - if "%PLATFORM%" == "x86" (SET cmake_generator=\""%generator%"\")
-  - if "%PLATFORM%" == "x64" (SET cmake_generator=\""%generator% Win64"\")
+  - if "%PLATFORM%" == "x86" (SET cmake_generator="%generator%")
+  - if "%PLATFORM%" == "x64" (SET cmake_generator="%generator% Win64")
 
 
 build_script:
@@ -58,8 +58,11 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
+  - echo "%generator%"
+  - echo "%cmake_generator%"
   - > 
-    cmake ..\ -G "%cmake_generator%"
+    cmake ..\ 
+    -G "%cmake_generator%"
     -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%\godot-yaml\yaml-cpp" 
     -DYAML_CPP_BUILD_TESTS="OFF"
     -DYAML_CPP_BUILD_TOOLS="OFF"
