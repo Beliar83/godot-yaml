@@ -51,7 +51,8 @@ init:
   - "%PYTHON%\\python.exe -c \"import struct; print(struct.calcsize('P') * 8)\""
   - if "%PLATFORM%" == "x86" (SET cmake_generator=%generator%)
   - if "%PLATFORM%" == "x64" (SET cmake_generator=%generator_x64%)
-
+install:
+  - git submodule update --init --recursive
 
 build_script:
   - cd ..
