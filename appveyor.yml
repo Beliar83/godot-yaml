@@ -77,9 +77,10 @@ build_script:
   - easy_install scons
   - cd godot-yaml\godot-cpp
   - dir
-  - scons platform=windows headers=godot_headers generate_bindings=yes target=%configuration%"
+  - scons platform=windows arch=%platform% headers=godot_headers generate_bindings=yes target=%configuration%"
   - cd ..
-  - scons target=%configuration%"
+  - if "%PLATFORM%" == "x86" scons target=%configuration%" bits=32
+  - if "%PLATFORM%" == "x64" scons target=%configuration%" bits=64
 
 after_build:
   - dir C:\projects\build\Release /s
