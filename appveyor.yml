@@ -68,15 +68,14 @@ build_script:
     -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%\godot-yaml\yaml-cpp" 
     -DYAML_CPP_BUILD_TESTS="OFF"
     -DYAML_CPP_BUILD_TOOLS="OFF"
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
   - cmake --build . --target ALL_BUILD --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   # install
   - cmake --build . --target INSTALL --config %configuration%
-  # generate build script - STATIC LIB
   - cd ..\..
   - easy_install scons
   - cd godot-yaml\godot-cpp
-  # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - dir
   - scons platform=windows headers=godot_headers generate_bindings=yes target=%configuration%"
   - cd ..
