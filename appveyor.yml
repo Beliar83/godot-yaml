@@ -10,8 +10,8 @@ platform:
   - x64
 
 configuration:
-  - Release
-  - Debug
+  - release
+  - debug
 
 environment:
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
@@ -79,7 +79,7 @@ build_script:
   - dir
   - if "%PLATFORM%" == "x86" (set bits=32)
   - if "%PLATFORM%" == "x64" (set bits=64)
-  - scons platform=windows arch=%bits% headers=godot_headers generate_bindings=yes target=%configuration%"
+  - scons platform=windows arch=%bits% headers=godot_headers generate_bindings=yes target=%configuration%
   - cd ..
   - scons target=%configuration% bits=%bits%
 
