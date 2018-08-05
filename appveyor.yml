@@ -57,7 +57,7 @@ build_script:
   - mkdir build
   - cd build
   - > 
-     cmake ..\ -G "%cmake_generator%"
+    cmake ..\ -G "%cmake_generator%"
     -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%\godot-yaml\yaml-cpp" 
     -DYAML_CPP_BUILD_TESTS="OFF"
     -DYAML_CPP_BUILD_TOOLS="OFF"
