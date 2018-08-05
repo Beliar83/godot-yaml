@@ -1,8 +1,8 @@
 #!python
 import os
 
-target = ARGUMENTS.get("target", "debug")
-platform = ARGUMENTS.get("platform", "windows")
+target = ARGUMENTS.get("target", "debug").lower()
+platform = ARGUMENTS.get("platform", "windows").lower()
 bits = ARGUMENTS.get("bits", "64")
 
 final_lib_path = 'demo/bin/'
