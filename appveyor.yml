@@ -1,0 +1,101 @@
+# Build worker image (VM template)
+image: Visual Studio 2017
+
+clone_depth: 5
+
+version: '{build}'
+
+platform:
+  - x86
+  - x64
+
+configuration:
+  - Release
+  - Debug
+
+environment:
+  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
+  matrix:
+    - generator: "Visual Studio 15"  
+
+matrix:
+  fast_finish: true
+
+# scripts that are called at very beginning, before repo cloning
+init:
+  - date /T & time /T
+  - git config --global core.autocrlf input
+  - cmake --version
+  # go to hell Xamarin (see http://help.appveyor.com/discussions/problems/4569)
+  - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
+  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
+  - ps: >-
+      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      {
+        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+      }
+      else
+      {
+        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+      }
+  # There are multiple pre-installed versions of Python on Appveyor  
+  # see https://www.appveyor.com/docs/installed-software/#python
+  - echo %PYTHON% %PYTHON_VERSION%
+  - "SET PATH=%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
+  # Show version and architecture for Python
+  - "%PYTHON%\\python.exe --version"
+  - "%PYTHON%\\python.exe -c \"import struct; print(struct.calcsize('P') * 8)\""
+  - if "%PLATFORM%" == "x86" (SET cmake_generator="%generator%")
+  - if "%PLATFORM%" == "x64" (SET cmake_generator="%generator% Win64")
+
+
+build_script:
+  # create folder for an out-of-source-tree build: "c:\projects\build"
+  - git clone --recurse-submodules https://github.com/Beliaar/godot-yaml
+  - git clone https://github.com/jbeder/yaml-cpp.git
+  - cd yaml-cpp
+  - mkdir build
+  - cd build
+  - > 
+     cmake ..\ -G "%cmake_generator%"
+    -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%\godot-yaml\yaml-cpp" 
+    -DYAML_CPP_BUILD_TESTS="OFF"
+    -DYAML_CPP_BUILD_TOOLS="OFF"
+  # build
+  - cmake --build . --target ALL_BUILD --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  # install
+  - cmake --build . --target INSTALL --config %configuration%
+  # generate build script - STATIC LIB
+  - cd ..\..
+  - cd godot-yaml\godot-cpp
+  - scons platform=windows headers=godot_headers generate_bindings=yes -target=%configuration%
+  - cd ..
+  - scons  -target=%configuration%
+
+after_build:
+  - dir C:\projects\build\Release /s
+  - if "%generator%"=="Visual Studio 14" (set COMPILER="VC15")
+
+  # package dependencies artifact
+  - cd demo\bin
+  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%.zip"
+  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%.zip"
+
+artifacts:
+  - path: 'godot-yaml-*.zip'
+    name: GodotYaml
+
+# deploy to Github Releases on tag push
+deploy:
+  provider: GitHub
+  release: 'GodotYaml $(APPVEYOR_REPO_TAG_NAME)'
+  tag: $(APPVEYOR_REPO_TAG_NAME)
+  artifact: GodotYaml
+  draft: false
+  prerelease: false
+  force_update: true               # overwrite files of existing release on GitHub
+  on:
+    branch: master                 # release from master branch only
+    appveyor_repo_tag: true        # deploy on tag push only
+  auth_token:                      # encrypted token from GitHub
+    secure: 4dm7uTzjL+0fOu5k6huo2PbcGhxj0e7RbXHtkdjiQ1maMLunSup7bdXP4+L58wDV
