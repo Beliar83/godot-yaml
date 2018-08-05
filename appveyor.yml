@@ -54,6 +54,7 @@ init:
 
 
 build_script:
+  - cd ..
   - git clone https://github.com/jbeder/yaml-cpp.git
   - cd yaml-cpp
   - mkdir build
