@@ -11,7 +11,7 @@ final_lib_path = 'demo/bin/'
 # that way you can run scons in a vs 2017 prompt and it will find all the required tools
 env = Environment()
 if platform == "windows":
-    if (target_arch == '64'):
+    if (bits == 64):
         env = Environment(ENV = os.environ, TARGET_ARCH='amd64')
     else:
         env = Environment(ENV = os.environ, TARGET_ARCH='x86')
