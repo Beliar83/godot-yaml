@@ -47,8 +47,8 @@ init:
   # Show version and architecture for Python
   - "%PYTHON%\\python.exe --version"
   - "%PYTHON%\\python.exe -c \"import struct; print(struct.calcsize('P') * 8)\""
-  - if "%PLATFORM%" == "x86" (SET cmake_generator="%generator%")
-  - if "%PLATFORM%" == "x64" (SET cmake_generator="%generator% Win64")
+  - if "%PLATFORM%" == "x86" (SET cmake_generator=\""%generator%"\")
+  - if "%PLATFORM%" == "x64" (SET cmake_generator=\""%generator% Win64"\")
 
 
 build_script:
