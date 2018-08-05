@@ -37,8 +37,8 @@ elif platform == "windows":
 
     final_lib_path = final_lib_path + 'win' + str(bits) + '/'
 
-env.Append(CPPPATH=['.', 'src/', "godot-cpp/godot_headers/", 'godot-cpp/include/', 'godot-cpp/include/core/', "E:/projekte/yaml-cpp/include/"])
-env.Append(LIBPATH=["godot-cpp/bin", "yaml-cpp"])
+env.Append(CPPPATH=['.', 'src/', "godot-cpp/godot_headers/", 'godot-cpp/include/', 'godot-cpp/include/core/', "yaml-cpp/include/"])
+env.Append(LIBPATH=["godot-cpp/bin", "yaml-cpp/lib"])
 env.Append(LIBS=["godot-cpp" + "." + platform + "." + str(bits)])
 if target == "debug":
     env.Append(LIBS=["libyaml-cppmdd"])
