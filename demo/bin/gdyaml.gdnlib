@@ -9,6 +9,9 @@ symbol_prefix="godot_"
 X11.64="res://bin/x11/libgodotyaml.so"
 Windows.64="res://bin/win64/libgodotyaml.dll"
 OSX.64="res://bin/osx/libgodotyaml.dylib"
+X11.32="res://bin/x11/libgodotyaml.so"
+Windows.32="res://bin/win32/libgodotyaml.dll"
+OSX.32="res://bin/osx/libgodotyaml.dylib"
 
 [dependencies]
 
