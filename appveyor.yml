@@ -53,8 +53,6 @@ init:
 
 
 build_script:
-  # create folder for an out-of-source-tree build: "c:\projects\build"
-  - git clone --recurse-submodules https://github.com/Beliaar/godot-yaml
   - git clone https://github.com/jbeder/yaml-cpp.git
   - cd yaml-cpp
   - mkdir build
