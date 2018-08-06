@@ -228,6 +228,9 @@ Node convert<Variant>::encode(const Variant &rhs) {
 		case Variant::POOL_INT_ARRAY:
 		case Variant::POOL_REAL_ARRAY:
 		case Variant::POOL_STRING_ARRAY:
+		case Variant::POOL_VECTOR2_ARRAY:
+		case Variant::POOL_VECTOR3_ARRAY:
+		case Variant::POOL_COLOR_ARRAY:
 			// Pool arrays need a tag to correctly decode them as a pool.
 			needsTag = true;
 		case Variant::ARRAY: {
@@ -371,6 +374,24 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 						godot::Array array = Array();
 						decode_array(node, array);
 						variant = godot::PoolStringArray(array);
+						break;
+					}
+					case Variant::POOL_VECTOR2_ARRAY: {
+						godot::Array array = Array();
+						decode_array(node, array);
+						variant = godot::PoolVector2Array(array);
+						break;
+					}
+					case Variant::POOL_VECTOR3_ARRAY: {
+						godot::Array array = Array();
+						decode_array(node, array);
+						variant = godot::PoolVector3Array(array);
+						break;
+					}
+					case Variant::POOL_COLOR_ARRAY: {
+						godot::Array array = Array();
+						decode_array(node, array);
+						variant = godot::PoolColorArray(array);
 						break;
 					}
 					case Variant::INT: {
