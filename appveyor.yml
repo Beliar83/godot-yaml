@@ -84,7 +84,7 @@ build_script:
   - scons target=%configuration% bits=%bits%
 
 after_build:
-  - if "%generator%"=="Visual Studio 14" (set COMPILER="VC15")
+  - if "%generator%"=="Visual Studio 15" (set COMPILER="MSVC15")
 
   # package dependencies artifact
   - cd demo\bin
