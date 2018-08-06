@@ -88,8 +88,8 @@ after_build:
 
   # package dependencies artifact
   - cd demo\bin
-  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%.zip"
-  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%.zip"
+  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%-%configuration%.zip"
+  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%-%configuration%.zip"
 
 artifacts:
   - path: 'godot-yaml-*.zip'
