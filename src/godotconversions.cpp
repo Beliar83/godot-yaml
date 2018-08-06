@@ -11,6 +11,28 @@ using namespace godot;
 
 namespace YAML {
 
+std::map<Variant::Type, std::string> type_names =
+		{
+			{ Variant::VECTOR2, "Vector2" },
+			{ Variant::RECT2, "Rect2" },
+			{ Variant::VECTOR3, "Vector3" },
+			{ Variant::TRANSFORM2D, "Transform2D" },
+			{ Variant::PLANE, "Plane" },
+			{ Variant::QUAT, "Quat" },
+			{ Variant::RECT3, "AABB" },
+			{ Variant::BASIS, "Basis" },
+			{ Variant::TRANSFORM, "Transform" },
+			{ Variant::COLOR, "Color" },
+			{ Variant::NODE_PATH, "NodePath" },
+			{ Variant::POOL_BYTE_ARRAY, "PoolByteArray" },
+			{ Variant::POOL_REAL_ARRAY, "PoolRealArray" },
+			{ Variant::POOL_INT_ARRAY, "PoolIntArray" },
+			{ Variant::POOL_STRING_ARRAY, "PoolStringArray" },
+			{ Variant::POOL_VECTOR2_ARRAY, "PoolVector2Array" },
+			{ Variant::POOL_VECTOR3_ARRAY, "PoolVector3Array" },
+			{ Variant::POOL_COLOR_ARRAY, "PoolColorArray" },
+		};
+
 void encode_vector2(Node &node, const Vector2 &vec2) {
 	node["x"] = vec2.x;
 	node["y"] = vec2.y;
@@ -186,7 +208,7 @@ Node convert<Variant>::encode(const Variant &rhs) {
 	YAML::Node node;
 	std::ostringstream oss;
 	Variant::Type var_type = rhs.get_type();
-	oss << "Godot/Variant/" << var_type;
+	oss << "Godot/Variant/" << type_names[var_type];
 	bool needsTag = false;
 	switch (var_type) {
 		case Variant::NIL: {
@@ -298,9 +320,28 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 		tokens.push_back(pos->str(1));
 	}
 	if (!tokens.empty()) {
-		if (tokens[0] == "Godot") {
-			if (tokens[1] == "Variant") {
-				auto var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
+		std::string token_godot = tokens[0];
+		std::transform(token_godot.begin(), token_godot.end(), token_godot.begin(), ::tolower);
+		std::string token_class = tokens[1];
+		std::transform(token_class.begin(), token_class.end(), token_class.begin(), ::tolower);
+		if (token_godot == "godot") {
+			if (token_class == "variant") {
+				Variant::Type var_type;
+				std::string type_value = tokens[2];
+				std::transform(type_value.begin(), type_value.end(), type_value.begin(), ::tolower);
+				bool found = false;
+				for (std::map<Variant::Type, std::string>::iterator it = type_names.begin(); it != type_names.end(); ++it) {
+					std::string value = it->second;
+					std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+					if (value == type_value) {
+						var_type = it->first;
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
+				}
 				switch (var_type) {
 					case Variant::NIL: {
 						variant = Variant();
