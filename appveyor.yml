@@ -77,6 +77,19 @@ init:
         {
             throw "Generator ${env:cmake_generator} unsupported"
         }
+  - ps: >-
+        if (${env:PLATFORM} -eq "x86") 
+        {
+            ${ENV:bits}=32
+        }
+        elseif (${env:PLATFORM} -eq "x64")
+        {
+            ${ENV:bits}=64
+        }
+        else
+        {
+            throw "Platform {env:PLATFORM} not supported"
+        }
 install:
   - git submodule update --init --recursive
   - cmd: easy_install scons
@@ -105,19 +118,6 @@ build_script:
   - cd ../..
   - cd godot-yaml/godot-cpp
   - dir
-  - ps: >-
-        if (${env:PLATFORM} -eq "x86") 
-        {
-            ${ENV:bits}=32
-        }
-        elseif (${env:PLATFORM} -eq "x64")
-        {
-            ${ENV:bits}=64
-        }
-        else
-        {
-            throw "Platform {env:PLATFORM} not supported"
-        }
   - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:configuration}
   - cd ..
   - ps: scons platform=${env:os} target=${env:configuration} bits=${env:bits}
