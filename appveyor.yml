@@ -77,7 +77,7 @@ build_script:
         }
         else
         {
-            ps: cmake --build . --target ALL_BUILD --config ${env:configuration}"
+            ps: cmake --build . --target ALL_BUILD --config ${env:configuration}
         }
   # install
   - ps: cmake --build . --target INSTALL --config ${env:configuration}
