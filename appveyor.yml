@@ -14,6 +14,11 @@ configuration:
 
 environment:
   matrix:
+    -
+      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+      build_os: linux
+      generator_x64: "Unix Makefiles"
+      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE='${env:CONFIGURATION}' -DBUILD_SHARED_LIBS=ON"
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       build_os: windows
@@ -23,11 +28,6 @@ environment:
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7"
       ADD_CMAKE_OPTIONS: ""
-    -
-      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-      build_os: linux
-      generator_x64: "Unix Makefiles"
-      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE='${env:CONFIGURATION}' -DBUILD_SHARED_LIBS=ON"
 
 matrix:
   fast_finish: true
@@ -68,7 +68,7 @@ init:
         throw "Platform ${env:platform} unsupported"
       }
   - ps: >-
-        if (${env:cmake_generator} -eq "Visual Studio 15")
+        if (${env:cmake_generator} -like "Visual Studio 15*")
         {
             ${env:COMPILER}="MSVC15"
         }
