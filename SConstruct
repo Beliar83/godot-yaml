@@ -34,11 +34,10 @@ elif platform == "linux":
     final_lib_path = final_lib_path + 'x11/'
 
 elif platform == "windows":
+    env.Append(LIBS=["yaml-cpp"])
     if target == "debug":
         env.Append(CCFLAGS = ['-EHsc', '-D_DEBUG', '-MDd'])
-        env.Append(LIBS=["libyaml-cppmdd"])
     else:
-        env.Append(LIBS=["libyaml-cppmd"])
         env.Append(CCFLAGS = ['-O2', '-EHsc', '-DNDEBUG', '-MD'])
 
     final_lib_path = final_lib_path + 'win' + str(bits) + '/'
