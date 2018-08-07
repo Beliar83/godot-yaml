@@ -70,7 +70,15 @@ build_script:
       -DYAML_CPP_BUILD_TOOLS="OFF"
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - ps: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - ps: >-
+    if (${env:APPVEYOR_BUILD_WORKER_IMAGE} -- like "Visual Studio*")
+    {
+        ps: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+    }
+    else
+    {
+        ps: cmake --build . --target ALL_BUILD --config ${env:configuration}"
+    }
   # install
   - ps: cmake --build . --target INSTALL --config ${env:configuration}
   - cd ..\..
