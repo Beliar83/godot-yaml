@@ -16,7 +16,7 @@ environment:
   matrix:
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      os: windows
+      build_os: windows
       MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
       generator: "Visual Studio 15"
       generator_x64: "Visual Studio 15 Win64"
@@ -25,7 +25,7 @@ environment:
       ADD_CMAKE_OPTIONS: ""
     -
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-      os: linux
+      build_os: linux
       generator_x64: "Unix Makefiles"
       ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE='${env:CONFIGURATION}'"
 
@@ -114,9 +114,9 @@ build_script:
   - cd godot-yaml/godot-cpp
   - dir
   - ps: scons --version
-  - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}
+  - ps: scons platform=${env:build_os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}
   - cd ..
-  - ps: scons platform=${env:os} target=${env:CONFIGURATION} bits=${env:bits}
+  - ps: scons platform=${env:build_os} target=${env:CONFIGURATION} bits=${env:bits}
 
 after_build:
 
