@@ -62,7 +62,7 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
-  - ps: > 
+  - ps: >- 
     cmake ..\ 
     -G ${env:cmake_generator}
     -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}\yaml-cpp" 
