@@ -86,7 +86,7 @@ build_script:
         {
             ${ENV:bits}=32
         }
-        else if (${env:PLATFORM} -eq "x64")
+        elseif (${env:PLATFORM} -eq "x64")
         {
             ${ENV:bits}=64
         }
