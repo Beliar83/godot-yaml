@@ -90,6 +90,7 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
+  - ps ${env:CONFIGURATION}
   - ps: >- 
         cmake ..\ 
         -G ${env:cmake_generator}
