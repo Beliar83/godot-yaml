@@ -23,10 +23,12 @@ environment:
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7"
       PATH: "%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
+      ADD_CMAKE_OPTIONS: ""
     -
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       os: linux
       generator_x64: "Unix Makefiles"
+      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE="${env:CONFIGURATION}"
      
 
 matrix:
@@ -97,7 +99,7 @@ build_script:
         -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
-        -DCMAKE_BUILD_TYPE="${env:CONFIGURATION}"
+        ${env:ADD_CMAKE_OPTIONS}"
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
   - cmd: cmake --build . --target ALL_BUILD --config ${env:CONFIGURATION} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
