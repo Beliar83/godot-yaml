@@ -37,22 +37,22 @@ matrix:
 
 # scripts that are called at very beginning, before repo cloning
 init:
-  - echo %os%
+  - ps: echo ${env:os}
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - git config --global core.autocrlf input
   - cmake --version
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
-      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      if (${env:APPVEYOR_REPO_TAG} -eq "true")
       {
-        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+        Update-AppveyorBuild -Version "${env:APPVEYOR_REPO_TAG_NAME}"
       }
       else
       {
-        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+        Update-AppveyorBuild -Version "dev-$(${env:APPVEYOR_REPO_COMMIT}.substring(0,7))"
       }
-  - if "%PLATFORM%" == "x86" (SET cmake_generator=%generator%)
-  - if "%PLATFORM%" == "x64" (SET cmake_generator=%generator_x64%)
+  - ps: if (${env:PLATFORM} -eq "x86") {${env:cmake_generator}=${env:generator}}
+  - ps: if (${env:PLATFORM} -eq "x64") {${env:cmake_generator}=${env:generator_x64}}
 install:
   - git submodule update --init --recursive
 
@@ -62,37 +62,35 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
-  - echo "%generator%"
-  - echo "%cmake_generator%"
-  - > 
+  - ps: > 
     cmake ..\ 
-    -G "%cmake_generator%"
-    -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%\yaml-cpp" 
+    -G ${env:cmake_generator}
+    -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}\yaml-cpp" 
     -DYAML_CPP_BUILD_TESTS="OFF"
     -DYAML_CPP_BUILD_TOOLS="OFF"
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - cmake --build . --target ALL_BUILD --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - ps: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   # install
-  - cmake --build . --target INSTALL --config %configuration%
+  - ps: cmake --build . --target INSTALL --config ${env:configuration}
   - cd ..\..
   - easy_install scons
   - cd godot-yaml\godot-cpp
   - dir
-  - if "%PLATFORM%" == "x86" (set bits=32)
-  - if "%PLATFORM%" == "x64" (set bits=64)
-  - scons platform=%os% arch=%bits% headers=godot_headers generate_bindings=yes target=%configuration%
+  - ps: if (${env:PLATFORM} -eq "x86") {${ENV:bits}=32}
+  - ps: if (${env:PLATFORM} -eq "x64") {${ENV:bits}=64}
+  - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:configuration}
   - cd ..
-  - scons target=%configuration% bits=%bits%
+  - scons target=${env:configuration} bits=${env:bits}
 
 after_build:
-  - if "%generator%" == "Visual Studio 15" (set COMPILER="MSVC15")
-  - uf "%generator%" == "Unix Makefiles" (set COMPILER="GCC")
+  - ps: if (${env:generator} -eq "Visual Studio 15") {set ${env:COMPILER}="MSVC15"}
+  - ps: if (${env:generator} -eq "Unix Makefiles") {set ${env:COMPILER}="GCC"}
 
   # package dependencies artifact
   - cd demo\bin
-  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%BUILD_CONFIG%-%platform%-%configuration%.zip"
-  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%BUILD_CONFIG%-%platform%-%configuration%.zip"
+  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}\godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
+  - appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}\godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
 
 artifacts:
   - path: 'godot-yaml-*.zip'
