@@ -80,8 +80,7 @@ init:
         {
             throw "Generator ${env:cmake_generator} unsupported"
         }
-  - ps: echo "scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}" 
-        
+
 install:
   - git submodule update --init --recursive
   - cmd: python -m pip install --upgrade pip
@@ -115,6 +114,7 @@ build_script:
   - cd ../..
   - cd godot-yaml/godot-cpp
   - dir
+  - ps: echo "scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}" 
   - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}
   - cd ..
   - ps: scons platform=${env:os} target=${env:CONFIGURATION} bits=${env:bits}
