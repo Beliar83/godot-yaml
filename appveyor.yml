@@ -55,6 +55,8 @@ init:
   - ps: if (${env:PLATFORM} -eq "x64") {${env:cmake_generator}=${env:generator_x64}}
 install:
   - git submodule update --init --recursive
+  - cmd: easy_install scons
+  - sh: sudo easy_install scons
 
 build_script:
   - cd ..
@@ -70,27 +72,12 @@ build_script:
         -DYAML_CPP_BUILD_TOOLS="OFF"
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - ps: >-
-        if (${env:APPVEYOR_BUILD_WORKER_IMAGE} -like "Visual Studio*")
-        {
-            cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-        }
-        else
-        {
-            make
-        }
+  - cmd: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - sh: make
   # install
-  - ps: >-
-        if (${env:APPVEYOR_BUILD_WORKER_IMAGE} -like "Visual Studio*")
-        {
-            cmake --build . --target INSTALL --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-        }
-        else
-        {
-            make install
-        }
+  - cmd: cmake --build . --target INSTALL --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - sh: make install
   - cd ../..
-  - easy_install scons
   - cd godot-yaml/godot-cpp
   - dir
   - ps: if (${env:PLATFORM} -eq "x86") {${ENV:bits}=32}
@@ -105,11 +92,11 @@ after_build:
 
   # package dependencies artifact
   - cd demo\bin
-  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
-  - appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
+  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.7z"
+  - appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.7z"
 
 artifacts:
-  - path: 'godot-yaml-*.zip'
+  - path: 'godot-yaml-*.7z'
     name: GodotYaml
 
 # deploy to Github Releases on tag push
