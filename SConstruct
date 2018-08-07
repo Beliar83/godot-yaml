@@ -22,13 +22,13 @@ def add_sources(sources, directory):
             sources.append(directory + '/' + file)
 
 if platform == "osx":
-    env.Append(CCFLAGS = ['-g','-O3', '-arch', 'x86_64', '-std=c++14'])
+    env.Append(CCFLAGS = ['-g','-O3', '-arch', 'x86_64', '-std=c++17'])
     env.Append(LINKFLAGS = ['-arch', 'x86_64'])
 
     final_lib_path = final_lib_path + 'osx/'
 
 elif platform == "linux":
-    env.Append(CCFLAGS = ['-fPIC', '-g','-O3', '-std=c++14'])
+    env.Append(CCFLAGS = ['-fPIC', '-g','-O3', '-std=c++17'])
 
     final_lib_path = final_lib_path + 'x11/'
 
