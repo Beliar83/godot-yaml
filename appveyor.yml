@@ -39,7 +39,8 @@ matrix:
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - cmd: set PATH="%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
-  - python --version
+  - cmd: python.exe --version
+  - sh: python --version
   - git config --global core.autocrlf input
   - cmake --version
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
