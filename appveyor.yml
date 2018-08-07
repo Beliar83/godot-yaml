@@ -27,7 +27,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       build_os: linux
       generator_x64: "Unix Makefiles"
-      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE='${env:CONFIGURATION}'"
+      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE='${env:CONFIGURATION}' -DBUILD_SHARED_LIBS=ON"
 
 matrix:
   fast_finish: true
@@ -96,8 +96,7 @@ build_script:
   - cd build
   - ps: >- 
         cmake ..\ 
-        -G ${env:cmake_generator}
-        -DBUILD_SHARED_LIBS=ON
+        -G ${env:cmake_generator}        
         -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
