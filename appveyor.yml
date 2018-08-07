@@ -77,10 +77,18 @@ build_script:
         }
         else
         {
-            cmake --build . --target ALL_BUILD --config ${env:configuration}
+            make
         }
   # install
-  - ps: cmake --build . --target INSTALL --config ${env:configuration}
+  - ps: >-
+        if (${env:APPVEYOR_BUILD_WORKER_IMAGE} -like "Visual Studio*")
+        {
+            cmake --build . --target INSTALL --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+        }
+        else
+        {
+            make install
+        }
   - cd ..\..
   - easy_install scons
   - cd godot-yaml\godot-cpp
