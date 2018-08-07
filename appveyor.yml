@@ -55,10 +55,12 @@ init:
       if (${env:PLATFORM} -eq "x86")
       {
         ${env:cmake_generator}=${env:generator}
+        ${env:bits}=32
       }
       elseif (${env:PLATFORM} -eq "x64")
       {
         ${env:cmake_generator}=${env:generator_x64}
+        ${env:bits}=64
       }
       else
       {
@@ -76,19 +78,6 @@ init:
         else
         {
             throw "Generator ${env:cmake_generator} unsupported"
-        }
-  - ps: >-
-        if (${env:PLATFORM} -eq "x86") 
-        {
-            ${ENV:bits}=32
-        }
-        elseif (${env:PLATFORM} -eq "x64")
-        {
-            ${ENV:bits}=64
-        }
-        else
-        {
-            throw "Platform {env:PLATFORM} not supported"
         }
 install:
   - git submodule update --init --recursive
