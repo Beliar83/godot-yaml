@@ -1,6 +1,4 @@
 # Build worker image (VM template)
-# image: Visual Studio 2017
-image: ubuntu
 
 clone_depth: 5
 
@@ -16,14 +14,14 @@ configuration:
 
 environment:
   matrix:
-    - 
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      os: windows
-      MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
-      generator: "Visual Studio 15"
-      generator_x64: "Visual Studio 15 Win64"
-      PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7" 
+    #- 
+      #APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      #os: windows
+      #MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
+      #generator: "Visual Studio 15"
+      #generator_x64: "Visual Studio 15 Win64"
+      #PYTHON: "C:\\Python27"
+      #PYTHON_VERSION: "2.7" 
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       os: linux
