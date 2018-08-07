@@ -92,7 +92,7 @@ after_build:
   - ps: if (${env:generator} -eq "Unix Makefiles") {set ${env:COMPILER}="GCC"}
 
   # package dependencies artifact
-  - cd demo\bin
+  - cd demo/bin
   - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.7z"
   - appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.7z"
 
