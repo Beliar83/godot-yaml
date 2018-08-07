@@ -99,8 +99,8 @@ build_script:
   - ps: scons platform=${env:os} target=${env:configuration} bits=${env:bits}
 
 after_build:
-  - ps: if (${env:generator} -eq "Visual Studio 15") {set ${env:COMPILER}="MSVC15"}
-  - ps: if (${env:generator} -eq "Unix Makefiles") {set ${env:COMPILER}="GCC"}
+  - ps: if (${env:generator} -eq "Visual Studio 15") {${env:COMPILER}="MSVC15"}
+  - ps: if (${env:generator} -eq "Unix Makefiles") {${env:COMPILER}="GCC"}
 
   # package dependencies artifact
   - cd demo/bin
