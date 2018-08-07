@@ -115,11 +115,11 @@ build_script:
   - cd godot-yaml/godot-cpp
   - dir
   - ps: dir
-  - cmd: scons platform=%os% arch=%bits% headers=godot_headers generate_bindings=yes target=%CONFIGURATION%
-  - sh: scons platform=$os arch=$bits headers=godot_headers generate_bindings=yes target=$CONFIGURATION
+  - cmd: scons platform=windows arch=%bits% headers=godot_headers generate_bindings=yes target=%CONFIGURATION%
+  - sh: scons platform=linux arch=$bits headers=godot_headers generate_bindings=yes target=$CONFIGURATION
   - cd ..
-  - cmd: scons platform=%os% target=%CONFIGURATION% bits=%bits%
-  - sh: scons platform=$os} target=$CONFIGURATION bits=$bits
+  - cmd: scons platform=windows target=%CONFIGURATION% bits=%bits%
+  - sh: scons platform=linux target=$CONFIGURATION bits=$bits
 
 after_build:
 
