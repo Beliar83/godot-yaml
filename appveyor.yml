@@ -80,7 +80,7 @@ init:
         {
             throw "Generator ${env:cmake_generator} unsupported"
         }
-  - ps: echo "scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}"
+  - ps: echo "scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}" 
         
 install:
   - git submodule update --init --recursive
