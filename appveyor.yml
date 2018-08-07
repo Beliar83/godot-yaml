@@ -28,7 +28,7 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       os: linux
       generator_x64: "Unix Makefiles"
-      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE="${env:CONFIGURATION}""
+      ADD_CMAKE_OPTIONS: "-DCMAKE_BUILD_TYPE='${env:CONFIGURATION}'"
 
 matrix:
   fast_finish: true
