@@ -17,7 +17,7 @@ configuration:
 environment:
   matrix:
     - 
-      image: Visual Studio 2017
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       os: windows
       MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
       generator: "Visual Studio 15"
@@ -25,7 +25,7 @@ environment:
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7" 
     - 
-      image: ubuntu
+      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       os: linux
       generator_x64: "Unix Makefiles"
      
