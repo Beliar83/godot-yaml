@@ -243,7 +243,7 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			break;
 		}
 		case Variant::STRING: {
-			String string = static_cast<godot::String>(rhs);
+			String string = rhs.operator String();
 			node = string.alloc_c_string();
 			break;
 		}
@@ -300,7 +300,7 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			break;
 		}
 		default:
-			node = static_cast<Variant>(static_cast<godot::String>(rhs));
+			node = static_cast<Variant>(rhs.operator String());
 			break;
 	}
 	if (needsTag) {
@@ -442,7 +442,7 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 	if (node.IsSequence()) {
 		variant = Array();
 		// Godot::print("Determined: Array");
-		decode_array(node, static_cast<godot::Array>(variant);
+		decode_array(node, variant.operator Array();
 		return true;
 	}
 	if (node.IsMap()) {
