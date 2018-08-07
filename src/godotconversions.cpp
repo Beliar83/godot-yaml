@@ -440,9 +440,10 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 		return true;
 	}
 	if (node.IsSequence()) {
-		variant = Array();
+		Array array = Array();
 		// Godot::print("Determined: Array");
-		decode_array(node, variant.operator Array());
+		decode_array(node, array);
+		variant = array;
 		return true;
 	}
 	if (node.IsMap()) {
