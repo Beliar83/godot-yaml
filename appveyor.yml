@@ -1,5 +1,6 @@
 # Build worker image (VM template)
-image: Visual Studio 2017
+# image: Visual Studio 2017
+image: ubuntu
 
 clone_depth: 5
 
@@ -14,24 +15,36 @@ configuration:
   - debug
 
 environment:
-  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
-    - generator: "Visual Studio 15"
+    - 
+      image: Visual Studio 2017
+      os: windows
+      MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
+      generator: "Visual Studio 15"
       generator_x64: "Visual Studio 15 Win64"
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7" 
+  matrix:
+    - image: ubuntu
+    - os: linux
+    - generator_x64: "Unix Makefiles"
+     
 
 matrix:
   fast_finish: true
 
+matrix:
+  exclude:
+    - image: ubuntu
+    - platform: x86
+
 # scripts that are called at very beginning, before repo cloning
 init:
+  - echo %os%
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - date /T & time /T
   - git config --global core.autocrlf input
   - cmake --version
-  # go to hell Xamarin (see http://help.appveyor.com/discussions/problems/4569)
-  - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
       if ($env:APPVEYOR_REPO_TAG -eq "true")
@@ -79,17 +92,18 @@ build_script:
   - dir
   - if "%PLATFORM%" == "x86" (set bits=32)
   - if "%PLATFORM%" == "x64" (set bits=64)
-  - scons platform=windows arch=%bits% headers=godot_headers generate_bindings=yes target=%configuration%
+  - scons platform=%os% arch=%bits% headers=godot_headers generate_bindings=yes target=%configuration%
   - cd ..
   - scons target=%configuration% bits=%bits%
 
 after_build:
-  - if "%generator%"=="Visual Studio 15" (set COMPILER="MSVC15")
+  - if "%generator%" == "Visual Studio 15" (set COMPILER="MSVC15")
+  - uf "%generator%" == "Unix Makefiles" (set COMPILER="GCC")
 
   # package dependencies artifact
   - cd demo\bin
-  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%-%configuration%.zip"
-  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%-%configuration%.zip"
+  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%BUILD_CONFIG%-%platform%-%configuration%.zip"
+  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%BUILD_CONFIG%-%platform%-%configuration%.zip"
 
 artifacts:
   - path: 'godot-yaml-*.zip'
