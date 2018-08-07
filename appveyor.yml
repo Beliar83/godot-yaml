@@ -94,14 +94,14 @@ build_script:
   - cd build
   - cmd: >- 
         cmake ..\ 
-        -G %cmake_generator%
+        -G "%cmake_generator%"
         -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
         -Wno-dev
   - sh: >-
         cmake ..\ 
-        -G $cmake_generator
+        -G "$cmake_generator"
         -DCMAKE_INSTALL_PREFIX="$APPVEYOR_BUILD_FOLDER/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
