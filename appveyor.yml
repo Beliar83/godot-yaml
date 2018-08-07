@@ -51,11 +51,6 @@ init:
       {
         Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
       }
-  # There are multiple pre-installed versions of Python on Appveyor  
-  # see https://www.appveyor.com/docs/installed-software/#python
-  # Show version and architecture for Python
-  - "%PYTHON% --version"
-  - "%PYTHON% -c \"import struct; print(struct.calcsize('P') * 8)\""
   - if "%PLATFORM%" == "x86" (SET cmake_generator=%generator%)
   - if "%PLATFORM%" == "x64" (SET cmake_generator=%generator_x64%)
 install:
