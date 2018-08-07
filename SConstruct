@@ -1,140 +1,54 @@
-# Build worker image (VM template)
+#!python
+import os
 
-clone_depth: 5
+target = ARGUMENTS.get("target", "debug").lower()
+platform = ARGUMENTS.get("platform", "windows").lower()
+bits = ARGUMENTS.get("bits", "64")
 
-version: '{build}'
+final_lib_path = 'demo/bin/'
 
-platform:
-  - x86
-  - x64
+# This makes sure to keep the session environment variables on windows, 
+# that way you can run scons in a vs 2017 prompt and it will find all the required tools
+env = Environment()
+if platform == "windows":
+    if bits == "64":
+        env = Environment(ENV = os.environ, TARGET_ARCH='amd64')
+    else:
+        env = Environment(ENV = os.environ, TARGET_ARCH='x86')
 
-configuration:
-  - release
-  - debug
+def add_sources(sources, directory):
+    for file in os.listdir(directory):
+        if file.endswith('.cpp'):
+            sources.append(directory + '/' + file)
 
-environment:
-  matrix:
-    #- 
-      #APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      #os: windows
-      #MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
-      #generator: "Visual Studio 15"
-      #generator_x64: "Visual Studio 15 Win64"
-      #PYTHON: "C:\\Python27"
-      #PYTHON_VERSION: "2.7" 
-      #PATH: "%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
-    - 
-      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-      os: linux
-      generator_x64: "Unix Makefiles"
-     
+if platform == "osx":
+    env.Append(CCFLAGS = ['-g','-O3', '-arch', 'x86_64', '-std=c++14'])
+    env.Append(LINKFLAGS = ['-arch', 'x86_64'])
+    env.Append(LIBS=["libyaml-cpp"])
+    final_lib_path = final_lib_path + 'osx/'
 
-matrix:
-  fast_finish: true
-  exclude:
-    - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-      platform: x86
+elif platform == "linux":
+    env.Append(CCFLAGS = ['-fPIC', '-g','-O3', '-std=c++14'])
+    env.Append(LIBS=["libyaml-cpp"])
 
-# scripts that are called at very beginning, before repo cloning
-init:
-  - ps: echo ${env:os}
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - git config --global core.autocrlf input
-  - cmake --version
-  # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
-  - ps: >-
-      if (${env:APPVEYOR_REPO_TAG} -eq "true")
-      {
-        Update-AppveyorBuild -Version "${env:APPVEYOR_REPO_TAG_NAME}"
-      }
-      else
-      {
-        Update-AppveyorBuild -Version "dev-$(${env:APPVEYOR_REPO_COMMIT}.substring(0,7))"
-      }
-  - ps: >-
-      if (${env:PLATFORM} -eq "x86")
-      {
-        ${env:cmake_generator}=${env:generator}
-        ${env:bits}=32
-      }
-      elseif (${env:PLATFORM} -eq "x64")
-      {
-        ${env:cmake_generator}=${env:generator_x64}
-        ${env:bits}=64
-      }
-      else
-      {
-        throw "Platform ${env:platform} unsupported"
-      }
-  - ps: >-
-        if (${env:cmake_generator} -eq "Visual Studio 15")
-        {
-            ${env:COMPILER}="MSVC15"
-        }
-        elseif (${env:cmake_generator} -eq "Unix Makefiles")
-        {
-            ${env:COMPILER}="GCC"
-        }
-        else
-        {
-            throw "Generator ${env:cmake_generator} unsupported"
-        }
-install:
-  - git submodule update --init --recursive
-  - cmd: easy_install scons
-  - sh: sudo apt-get install scons
+    final_lib_path = final_lib_path + 'x11/'
 
-build_script:
-  - cd ..
-  - git clone https://github.com/jbeder/yaml-cpp.git
-  - cd yaml-cpp
-  - mkdir build
-  - cd build
-  - ps: >- 
-        cmake ..\ 
-        -G ${env:cmake_generator}
-        -DBUILD_SHARED_LIBS=ON
-        -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
-        -DYAML_CPP_BUILD_TESTS="OFF"
-        -DYAML_CPP_BUILD_TOOLS="OFF"
-        -DCMAKE_BUILD_TYPE=${env:configuration}
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  # build
-  - cmd: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - sh: make
-  # install
-  - cmd: cmake --build . --target INSTALL --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-  - sh: make install
-  - cd ../..
-  - cd godot-yaml/godot-cpp
-  - dir
-  - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:configuration}
-  - cd ..
-  - ps: scons platform=${env:os} target=${env:configuration} bits=${env:bits}
+elif platform == "windows":
+    if target == "debug":
+        env.Append(CCFLAGS = ['-EHsc', '-D_DEBUG', '-MDd'])
+        env.Append(LIBS=["libyaml-cppmdd"])
+    else:
+        env.Append(LIBS=["libyaml-cppmd"])
+        env.Append(CCFLAGS = ['-O2', '-EHsc', '-DNDEBUG', '-MD'])
 
-after_build:
+    final_lib_path = final_lib_path + 'win' + str(bits) + '/'
 
-  # package dependencies artifact
-  - cd demo/bin
-  - ps: echo "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:configuration}.7z"
-  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:configuration}.7z"
-  - ps: appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:configuration}.7z"
+env.Append(CPPPATH=['.', 'src/', "godot-cpp/godot_headers/", 'godot-cpp/include/', 'godot-cpp/include/core/', "yaml-cpp/include/"])
+env.Append(LIBPATH=["godot-cpp/bin", "yaml-cpp/lib"])
+env.Append(LIBS=["godot-cpp" + "." + platform + "." + str(bits)])
 
-artifacts:
-  - path: 'godot-yaml-*.7z'
-    name: GodotYaml
+sources = []
+add_sources(sources, "src")
 
-# deploy to Github Releases on tag push
-deploy:
-  provider: GitHub
-  release: 'GodotYaml $(APPVEYOR_REPO_TAG_NAME)'
-  tag: $(APPVEYOR_REPO_TAG_NAME)
-  artifact: GodotYaml
-  draft: false
-  prerelease: false
-  force_update: true               # overwrite files of existing release on GitHub
-  on:
-    branch: master                 # release from master branch only
-    appveyor_repo_tag: true        # deploy on tag push only
-  auth_token:                      # encrypted token from GitHub
-    secure: 4dm7uTzjL+0fOu5k6huo2PbcGhxj0e7RbXHtkdjiQ1maMLunSup7bdXP4+L58wDV
+library = env.SharedLibrary(target=final_lib_path + 'libgodotyaml', source=sources)
+Default(library)
