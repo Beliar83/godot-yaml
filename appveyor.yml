@@ -65,7 +65,7 @@ build_script:
   - ps: >- 
         cmake ..\ 
         -G ${env:cmake_generator}
-        -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}\yaml-cpp" 
+        -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
@@ -89,9 +89,9 @@ build_script:
         {
             make install
         }
-  - cd ..\..
+  - cd ../..
   - easy_install scons
-  - cd godot-yaml\godot-cpp
+  - cd godot-yaml/godot-cpp
   - dir
   - ps: if (${env:PLATFORM} -eq "x86") {${ENV:bits}=32}
   - ps: if (${env:PLATFORM} -eq "x64") {${ENV:bits}=64}
@@ -105,8 +105,8 @@ after_build:
 
   # package dependencies artifact
   - cd demo\bin
-  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}\godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
-  - appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}\godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
+  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
+  - appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:BUILD_CONFIG}-${env:platform}-${env:configuration}.zip"
 
 artifacts:
   - path: 'godot-yaml-*.zip'
