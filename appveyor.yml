@@ -32,8 +32,6 @@ environment:
 
 matrix:
   fast_finish: true
-
-matrix:
   exclude:
     - image: ubuntu
     - platform: x86
