@@ -100,10 +100,10 @@ build_script:
         ${env:ADD_CMAKE_OPTIONS}
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - cmd: cmake --build . --target ALL_BUILD --config ${env:CONFIGURATION} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: cmake --build . --target ALL_BUILD --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make
   # install
-  - cmd: cmake --build . --target INSTALL --config ${env:CONFIGURATION} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: cmake --build . --target INSTALL --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make install
   - cd ../..
   - cd godot-yaml/godot-cpp
