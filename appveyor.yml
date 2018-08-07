@@ -97,6 +97,7 @@ build_script:
         -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
+        -DCMAKE_BUILD_TYPE=${env:configuration}
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
   - cmd: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
