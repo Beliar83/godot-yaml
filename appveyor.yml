@@ -18,7 +18,6 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       build_os: linux
       generator_x64: "Unix Makefiles"
-      ADD_CMAKE_OPTIONS: -DCMAKE_BUILD_TYPE='${env:CONFIGURATION}' -DBUILD_SHARED_LIBS=ON
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       build_os: windows
@@ -27,7 +26,6 @@ environment:
       generator_x64: "Visual Studio 15 Win64"
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7"
-      ADD_CMAKE_OPTIONS: ""
 
 matrix:
   fast_finish: true
@@ -94,15 +92,23 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
-  - ps: >- 
+  - cmd: >- 
         cmake ..\ 
-        -G ${env:cmake_generator}        
-        -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
+        -G %cmake_generator%
+        -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
         -Wno-dev
-        ${env:ADD_CMAKE_OPTIONS}
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - sh: >-
+        cmake ..\ 
+        -G $cmake_generator
+        -DCMAKE_INSTALL_PREFIX="$APPVEYOR_BUILD_FOLDER/yaml-cpp" 
+        -DYAML_CPP_BUILD_TESTS="OFF"
+        -DYAML_CPP_BUILD_TOOLS="OFF"
+        -DCMAKE_BUILD_TYPE="$CONFIGURATION"
+        -DBUILD_SHARED_LIBS="ON"
+        -Wno-dev
+  - ps:   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
   - cmd: cmake --build . --target ALL_BUILD --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make
