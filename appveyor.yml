@@ -51,8 +51,32 @@ init:
       {
         Update-AppveyorBuild -Version "dev-$(${env:APPVEYOR_REPO_COMMIT}.substring(0,7))"
       }
-  - ps: if (${env:PLATFORM} -eq "x86") {${env:cmake_generator}=${env:generator}}
-  - ps: if (${env:PLATFORM} -eq "x64") {${env:cmake_generator}=${env:generator_x64}}
+  - ps: >-
+      if (${env:PLATFORM} -eq "x86")
+      {
+        ${env:cmake_generator}=${env:generator}
+      }
+      elseif (${env:PLATFORM} -eq "x64")
+      {
+        ${env:cmake_generator}=${env:generator_x64}
+      }
+      else
+      {
+        throw "Platform ${env:platform} unsupported"
+      }
+  - ps: >-
+        if (${env:generator} -eq "Visual Studio 15")
+        {
+            ${env:COMPILER}="MSVC15"
+        }
+        elseif (${env:generator} -eq "Unix Makefiles")
+        {
+            ${env:COMPILER}="GCC"
+        }
+        else
+        {
+            throw "Generator ${env:generator} unsupported"
+        }
 install:
   - git submodule update --init --recursive
   - cmd: easy_install scons
@@ -99,8 +123,6 @@ build_script:
   - ps: scons platform=${env:os} target=${env:configuration} bits=${env:bits}
 
 after_build:
-  - ps: if (${env:generator} -eq "Visual Studio 15") {${env:COMPILER}="MSVC15"}
-  - ps: if (${env:generator} -eq "Unix Makefiles") {${env:COMPILER}="GCC"}
 
   # package dependencies artifact
   - cd demo/bin
