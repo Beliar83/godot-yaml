@@ -73,11 +73,11 @@ build_script:
   - ps: >-
         if (${env:APPVEYOR_BUILD_WORKER_IMAGE} -like "Visual Studio*")
         {
-            ps: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+            cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
         }
         else
         {
-            ps: cmake --build . --target ALL_BUILD --config ${env:configuration}
+            cmake --build . --target ALL_BUILD --config ${env:configuration}
         }
   # install
   - ps: cmake --build . --target INSTALL --config ${env:configuration}
