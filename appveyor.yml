@@ -24,10 +24,10 @@ environment:
       generator_x64: "Visual Studio 15 Win64"
       PYTHON: "C:\\Python27"
       PYTHON_VERSION: "2.7" 
-  matrix:
-    - image: ubuntu
-    - os: linux
-    - generator_x64: "Unix Makefiles"
+    - 
+      image: ubuntu
+      os: linux
+      generator_x64: "Unix Makefiles"
      
 
 matrix:
