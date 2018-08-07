@@ -90,7 +90,6 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
-  - ps: echo ${env:configuration}
   - ps: >- 
         cmake ..\ 
         -G ${env:cmake_generator}
@@ -98,28 +97,28 @@ build_script:
         -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
-        -DCMAKE_BUILD_TYPE="${env:configuration}"
+        -DCMAKE_BUILD_TYPE="${env:CONFIGURATION}"
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - cmd: cmake --build . --target ALL_BUILD --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: cmake --build . --target ALL_BUILD --config ${env:CONFIGURATION} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make
   # install
-  - cmd: cmake --build . --target INSTALL --config ${env:configuration} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: cmake --build . --target INSTALL --config ${env:CONFIGURATION} -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make install
   - cd ../..
   - cd godot-yaml/godot-cpp
   - dir
-  - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:configuration}
+  - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}
   - cd ..
-  - ps: scons platform=${env:os} target=${env:configuration} bits=${env:bits}
+  - ps: scons platform=${env:os} target=${env:CONFIGURATION} bits=${env:bits}
 
 after_build:
 
   # package dependencies artifact
   - cd demo/bin
-  - ps: echo "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:configuration}.7z"
-  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:configuration}.7z"
-  - ps: appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:configuration}.7z"
+  - ps: echo "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
+  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
+  - ps: appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
 
 artifacts:
   - path: 'godot-yaml-*.7z'
