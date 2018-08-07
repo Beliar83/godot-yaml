@@ -84,7 +84,7 @@ build_script:
   - ps: if (${env:PLATFORM} -eq "x64") {${ENV:bits}=64}
   - ps: scons platform=${env:os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:configuration}
   - cd ..
-  - scons target=${env:configuration} bits=${env:bits}
+  - ps: scons platform=${env:os} target=${env:configuration} bits=${env:bits}
 
 after_build:
   - ps: if (${env:generator} -eq "Visual Studio 15") {set ${env:COMPILER}="MSVC15"}
