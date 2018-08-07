@@ -31,7 +31,7 @@ environment:
 matrix:
   fast_finish: true
   exclude:
-    - image: ubuntu
+    - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       platform: x86
 
 # scripts that are called at very beginning, before repo cloning
