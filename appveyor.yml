@@ -67,6 +67,7 @@ build_script:
   - ps: >- 
         cmake ..\ 
         -G ${env:cmake_generator}
+        -DBUILD_SHARED_LIBS=ON
         -DCMAKE_INSTALL_PREFIX="${env:APPVEYOR_BUILD_FOLDER}/yaml-cpp" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
