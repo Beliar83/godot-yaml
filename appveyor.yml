@@ -56,7 +56,7 @@ init:
 install:
   - git submodule update --init --recursive
   - cmd: easy_install scons
-  - sh: sudo easy_install scons
+  - sh: sudo apt-get install scons
 
 build_script:
   - cd ..
