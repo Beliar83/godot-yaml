@@ -114,7 +114,7 @@ build_script:
   - cd ../..
   - cd godot-yaml/godot-cpp
   - dir
-  - ps: dir
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - cmd: scons platform=windows arch=%bits% headers=godot_headers generate_bindings=yes target=%CONFIGURATION%
   - sh: scons platform=linux arch=$bits headers=godot_headers generate_bindings=yes target=$CONFIGURATION
   - cd ..
