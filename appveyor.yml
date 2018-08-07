@@ -9,8 +9,8 @@ platform:
   - x64
 
 configuration:
-  - release
-  - debug
+  - Release
+  - Debug
 
 environment:
   matrix:
@@ -103,7 +103,6 @@ build_script:
         -DYAML_CPP_BUILD_TOOLS="OFF"
         -Wno-dev
         ${env:ADD_CMAKE_OPTIONS}
-  - cmd: echo Test
   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
   - cmd: cmake --build . --target ALL_BUILD --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
