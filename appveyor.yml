@@ -14,16 +14,16 @@ configuration:
 
 environment:
   matrix:
-    #- 
-      #APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      #os: windows
-      #MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
-      #generator: "Visual Studio 15"
-      #generator_x64: "Visual Studio 15 Win64"
-      #PYTHON: "C:\\Python27"
-      #PYTHON_VERSION: "2.7" 
-      #PATH: "%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
     - 
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      os: windows
+      MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
+      generator: "Visual Studio 15"
+      generator_x64: "Visual Studio 15 Win64"
+      PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7"
+      PATH: "%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
+    -
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       os: linux
       generator_x64: "Unix Makefiles"
@@ -117,8 +117,8 @@ after_build:
   # package dependencies artifact
   - cd demo/bin
   - ps: echo "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
-  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
-  - ps: appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
+  - ps: 7z a -tzip -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:os}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
+  - ps: appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:os}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
 
 artifacts:
   - path: 'godot-yaml-*.7z'
