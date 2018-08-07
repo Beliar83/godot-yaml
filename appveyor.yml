@@ -65,17 +65,17 @@ init:
         throw "Platform ${env:platform} unsupported"
       }
   - ps: >-
-        if (${env:generator} -eq "Visual Studio 15")
+        if (${env:cmake_generator} -eq "Visual Studio 15")
         {
             ${env:COMPILER}="MSVC15"
         }
-        elseif (${env:generator} -eq "Unix Makefiles")
+        elseif (${env:cmake_generator} -eq "Unix Makefiles")
         {
             ${env:COMPILER}="GCC"
         }
         else
         {
-            throw "Generator ${env:generator} unsupported"
+            throw "Generator ${env:cmake_generator} unsupported"
         }
 install:
   - git submodule update --init --recursive
