@@ -119,7 +119,7 @@ build_script:
   - cd godot-yaml/godot-cpp
   - dir
   - ps: scons --version
-  - ps: scons platform=${env:build_os} arch=${env:bits} headers=godot_headers generate_bindings=yes target=${env:CONFIGURATION}
+  - ps: scons platform=${env:build_os} arch=${env:bits} headers=godot_headers generate_bindings=yes target="${env:CONFIGURATION}".ToLower()
   - cd ..
   - ps: scons platform=${env:build_os} target=${env:CONFIGURATION} bits=${env:bits}
 
