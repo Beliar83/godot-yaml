@@ -24,18 +24,21 @@ def add_sources(sources, directory):
 if platform == "osx":
     env.Append(CCFLAGS = ['-g','-O3', '-arch', 'x86_64', '-std=c++14'])
     env.Append(LINKFLAGS = ['-arch', 'x86_64'])
-
+    env.Append(LIBS=["libyaml-cpp"])
     final_lib_path = final_lib_path + 'osx/'
 
 elif platform == "linux":
     env.Append(CCFLAGS = ['-fPIC', '-g','-O3', '-std=c++14'])
+    env.Append(LIBS=["libyaml-cpp"])
 
     final_lib_path = final_lib_path + 'x11/'
 
 elif platform == "windows":
     if target == "debug":
         env.Append(CCFLAGS = ['-EHsc', '-D_DEBUG', '-MDd'])
+        env.Append(LIBS=["libyaml-cppmdd"])
     else:
+        env.Append(LIBS=["libyaml-cppmd"])
         env.Append(CCFLAGS = ['-O2', '-EHsc', '-DNDEBUG', '-MD'])
 
     final_lib_path = final_lib_path + 'win' + str(bits) + '/'
@@ -43,10 +46,6 @@ elif platform == "windows":
 env.Append(CPPPATH=['.', 'src/', "godot-cpp/godot_headers/", 'godot-cpp/include/', 'godot-cpp/include/core/', "yaml-cpp/include/"])
 env.Append(LIBPATH=["godot-cpp/bin", "yaml-cpp/lib"])
 env.Append(LIBS=["godot-cpp" + "." + platform + "." + str(bits)])
-if target == "debug":
-    env.Append(LIBS=["libyaml-cppmdd"])
-else:
-    env.Append(LIBS=["libyaml-cppmd"])
 
 sources = []
 add_sources(sources, "src")
