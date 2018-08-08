@@ -106,7 +106,7 @@ build_script:
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
         -DCMAKE_BUILD_TYPE="$CONFIGURATION"
-        -DBUILD_SHARED_LIBS="ON"
+        -CMAKE_POSITION_INDEPENDENT_CODE="ON"
         -Wno-dev
   - ps:   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
