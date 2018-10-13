@@ -25,15 +25,22 @@ String godot::YAML::print(Variant p_value) {
 	return String(yaml.str().c_str());
 }
 
+void PrintParseError(std::string message, ::YAML::Mark errorMark) {
+	std::stringstream error_string;
+	error_string << "Error parsing yaml: " << message << " at "
+				 << "Line " << errorMark.line + 1 << " Column " << errorMark.column + 1 << " (Position " << errorMark.pos << ")";
+	Godot::print(error_string.str().c_str());
+}
+
 Variant godot::YAML::parse(String text) {
-	::YAML::Node node = ::YAML::Load(text.alloc_c_string());
 	try {
+		::YAML::Node node = ::YAML::Load(text.alloc_c_string());
 		return node.as<Variant>();
-	} catch (::YAML::TypedBadConversion<Variant> err) {
-		std::stringstream error_string;
-		error_string << "Error parsing yaml: " << err.msg << " at "
-					 << "Line " << err.mark.line + 1 << " Column " << err.mark.column + 1 << " (Position " << err.mark.pos << ")";
-		Godot::print(error_string.str().c_str());
+	} catch (::YAML::ParserException &parserError) {
+		PrintParseError(parserError.msg, parserError.mark);
+		return Variant();
+	} catch (::YAML::TypedBadConversion<Variant> &badConversionError) {
+		PrintParseError(badConversionError.msg, badConversionError.mark);
 		return Variant();
 	}
 }
