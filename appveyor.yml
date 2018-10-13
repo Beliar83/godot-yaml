@@ -1,5 +1,4 @@
 # Build worker image (VM template)
-image: Visual Studio 2017
 
 clone_depth: 5
 
@@ -10,49 +9,82 @@ platform:
   - x64
 
 configuration:
-  - release
-  - debug
+  - Release
+  - Debug
 
 environment:
-  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
   matrix:
-    - generator: "Visual Studio 15"
+    -
+      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+      build_os: linux
+      generator_x64: "Unix Makefiles"
+    - 
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      build_os: windows
+      MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
+      generator: "Visual Studio 15"
       generator_x64: "Visual Studio 15 Win64"
       PYTHON: "C:\\Python27"
-      PYTHON_VERSION: "2.7" 
+      PYTHON_VERSION: "2.7"
 
 matrix:
   fast_finish: true
+  exclude:
+    - APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+      platform: x86
 
 # scripts that are called at very beginning, before repo cloning
 init:
   - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - date /T & time /T
+  - cmd: "SET PATH=%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
+  - python --version
   - git config --global core.autocrlf input
   - cmake --version
-  # go to hell Xamarin (see http://help.appveyor.com/discussions/problems/4569)
-  - del "C:\Program Files (x86)\MSBuild\14.0\Microsoft.Common.targets\ImportAfter\Xamarin.Common.targets"
   # Set "build version number" to "short-commit-hash" or when tagged to "tag name" (Travis style)
   - ps: >-
-      if ($env:APPVEYOR_REPO_TAG -eq "true")
+      if (${env:APPVEYOR_REPO_TAG} -eq "true")
       {
-        Update-AppveyorBuild -Version "$env:APPVEYOR_REPO_TAG_NAME"
+        Update-AppveyorBuild -Version "${env:APPVEYOR_REPO_TAG_NAME}"
       }
       else
       {
-        Update-AppveyorBuild -Version "dev-$($env:APPVEYOR_REPO_COMMIT.substring(0,7))"
+        Update-AppveyorBuild -Version "dev-$(${env:APPVEYOR_REPO_COMMIT}.substring(0,7))"
       }
-  # There are multiple pre-installed versions of Python on Appveyor  
-  # see https://www.appveyor.com/docs/installed-software/#python
-  - echo %PYTHON% %PYTHON_VERSION%
-  - "SET PATH=%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;%PATH%"
-  # Show version and architecture for Python
-  - "%PYTHON%\\python.exe --version"
-  - "%PYTHON%\\python.exe -c \"import struct; print(struct.calcsize('P') * 8)\""
-  - if "%PLATFORM%" == "x86" (SET cmake_generator=%generator%)
-  - if "%PLATFORM%" == "x64" (SET cmake_generator=%generator_x64%)
+  - ps: >-
+      if (${env:PLATFORM} -eq "x86")
+      {
+        ${env:cmake_generator}=${env:generator}
+        ${env:bits}=32
+      }
+      elseif (${env:PLATFORM} -eq "x64")
+      {
+        ${env:cmake_generator}=${env:generator_x64}
+        ${env:bits}=64
+      }
+      else
+      {
+        throw "Platform ${env:platform} unsupported"
+      }
+  - ps: >-
+        if (${env:cmake_generator} -like "Visual Studio 15*")
+        {
+            ${env:COMPILER}="MSVC15"
+        }
+        elseif (${env:cmake_generator} -eq "Unix Makefiles")
+        {
+            ${env:COMPILER}="GCC"
+        }
+        else
+        {
+            throw "Generator ${env:cmake_generator} unsupported"
+        }
+
 install:
   - git submodule update --init --recursive
+  - cmd: python -m pip install --upgrade pip
+  - cmd: pip install wheel
+  - cmd: pip install scons
+  - sh: sudo apt-get install scons
 
 build_script:
   - cd ..
@@ -60,39 +92,48 @@ build_script:
   - cd yaml-cpp
   - mkdir build
   - cd build
-  - echo "%generator%"
-  - echo "%cmake_generator%"
-  - > 
-    cmake ..\ 
-    -G "%cmake_generator%"
-    -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%\yaml-cpp" 
-    -DYAML_CPP_BUILD_TESTS="OFF"
-    -DYAML_CPP_BUILD_TOOLS="OFF"
-  #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - cmd: >- 
+        cmake ../ 
+        -G "%cmake_generator%"
+        -DCMAKE_INSTALL_PREFIX="%APPVEYOR_BUILD_FOLDER%/yaml-cpp" 
+        -DYAML_CPP_BUILD_TESTS="OFF"
+        -DYAML_CPP_BUILD_TOOLS="OFF"
+        -Wno-dev
+  - sh: >-
+        cmake ../ 
+        -G "$cmake_generator"
+        -DCMAKE_INSTALL_PREFIX="$APPVEYOR_BUILD_FOLDER/yaml-cpp" 
+        -DYAML_CPP_BUILD_TESTS="OFF"
+        -DYAML_CPP_BUILD_TOOLS="OFF"
+        -DCMAKE_BUILD_TYPE="$CONFIGURATION"
+        -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
+        -Wno-dev
+  - ps:   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - cmake --build . --target ALL_BUILD --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: cmake --build . --target ALL_BUILD --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - sh: make
   # install
-  - cmake --build . --target INSTALL --config %configuration%
-  - cd ..\..
-  - easy_install scons
-  - cd godot-yaml\godot-cpp
+  - cmd: cmake --build . --target INSTALL --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - sh: make install
+  - cd ../..
+  - cd godot-yaml/godot-cpp
   - dir
-  - if "%PLATFORM%" == "x86" (set bits=32)
-  - if "%PLATFORM%" == "x64" (set bits=64)
-  - scons platform=windows arch=%bits% headers=godot_headers generate_bindings=yes target=%configuration%
+  - ps: scons --version
+  - ps: ${env:g_cpp_target} = ${env:CONFIGURATION}.ToLower()
+  - ps: scons platform=${env:build_os} arch=${env:bits} headers=godot_headers generate_bindings=yes target="${env:g_cpp_target}"
   - cd ..
-  - scons target=%configuration% bits=%bits%
+  - ps: scons platform=${env:build_os} target=${env:CONFIGURATION} bits=${env:bits}
 
 after_build:
-  - if "%generator%"=="Visual Studio 15" (set COMPILER="MSVC15")
 
   # package dependencies artifact
-  - cd demo\bin
-  - 7z a -tzip -mx9 "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%-%configuration%.zip"
-  - appveyor PushArtifact "%APPVEYOR_BUILD_FOLDER%\godot-yaml-%APPVEYOR_BUILD_VERSION%-%COMPILER%-%platform%-%configuration%.zip"
+  - cd demo/bin
+  - ps: echo "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
+  - ps: 7z a -t7z -mx9 "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:build_os}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
+  - ps: appveyor PushArtifact "${env:APPVEYOR_BUILD_FOLDER}/godot-yaml-${env:APPVEYOR_BUILD_VERSION}-${env:COMPILER}-${env:build_os}-${env:PLATFORM}-${env:CONFIGURATION}.7z"
 
 artifacts:
-  - path: 'godot-yaml-*.zip'
+  - path: 'godot-yaml-*.7z'
     name: GodotYaml
 
 # deploy to Github Releases on tag push
