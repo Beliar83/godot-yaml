@@ -5,6 +5,7 @@ addons:
     packages:
     - scons
     - yaml-cpp
+    - p7zip
 git:
   submodules: false
 script: 
@@ -13,3 +14,14 @@ script:
   - scons platform=osx headers=godot_headers generate_bindings=yes target=release
   - cd ..
   - scons platform=osx target=release 
+before_deploy:
+  - cd demo/bin
+  - 7z a -t7z -mx9 "${TRAVIS_BUILD_DIR}/godot-yaml-${TRAVIS_BUILD_NUMBER}-osx-release.7z"
+deploy:
+  provider: releases
+  api_key:
+    secure: 4dm7uTzjL+0fOu5k6huo2PbcGhxj0e7RbXHtkdjiQ1maMLunSup7bdXP4+L58wDV
+  file: "${TRAVIS_BUILD_DIR}/godot-yaml-${TRAVIS_BUILD_NUMBER}-osx-release.7z"
+  skip_cleanup: true
+  on:
+    tags: true
