@@ -1,0 +1,21 @@
+os: osx
+language: cpp
+script: 
+  - cd yaml-cpp
+  - mkdir build
+  >- 
+  cmake ../ 
+  -G "XCode"
+  -DCMAKE_INSTALL_PREFIX="../../yaml-cpp-install"
+  -DYAML_CPP_BUILD_TESTS="OFF"
+  -DYAML_CPP_BUILD_TOOLS="OFF"
+  -DCMAKE_BUILD_TYPE="RELEASE"
+  -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
+  -Wno-dev
+  - make
+  - make install
+  - cd ../..
+  - cd godot-cpp
+  - scons platform=osx headers=godot_headers generate_bindings=yes target=release
+  - cd ..
+  - scons platform=osx target=release
