@@ -6,15 +6,15 @@ script:
   - cd build
   - >-
    cmake ..
-   -G "Xcode"
+   -G "Unix Makefiles"
    -DCMAKE_INSTALL_PREFIX="../../yaml-cpp-install"
    -DYAML_CPP_BUILD_TESTS="OFF"
    -DYAML_CPP_BUILD_TOOLS="OFF"
    -DCMAKE_BUILD_TYPE="RELEASE"
    -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
    -Wno-dev
-  - cmake --build . --target ALL_BUILD --config Release
-  - cmake --build . --target INSTALL --config Release
+  - make
+  - make install
   - cd ../..
   - cd godot-cpp
   - scons platform=osx headers=godot_headers generate_bindings=yes target=release
