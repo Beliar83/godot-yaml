@@ -8,9 +8,9 @@ addons:
 git:
   submodules: false
 script: 
-  - git submodule init godot-cpp
-  - git submodule update godot-cpp
+  - git submodule update --recursive godot-cpp
   - cd godot-cpp
+  - git update
   - scons platform=osx headers=godot_headers generate_bindings=yes target=release
   - cd ..
   - scons platform=osx target=release 
