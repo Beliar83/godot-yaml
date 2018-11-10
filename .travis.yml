@@ -4,7 +4,15 @@ script:
   - cd yaml-cpp
   - mkdir build
   - cd build
-  - cmake .. -G "XCode" -DCMAKE_INSTALL_PREFIX="../../yaml-cpp-install" -DYAML_CPP_BUILD_TESTS="OFF" -DYAML_CPP_BUILD_TOOLS="OFF" -DCMAKE_BUILD_TYPE="RELEASE" -DCMAKE_POSITION_INDEPENDENT_CODE="ON" -Wno-dev
+  - >-
+   cmake ..
+   -G "Xcode"
+   -DCMAKE_INSTALL_PREFIX="../../yaml-cpp-install"
+   -DYAML_CPP_BUILD_TESTS="OFF"
+   -DYAML_CPP_BUILD_TOOLS="OFF"
+   -DCMAKE_BUILD_TYPE="RELEASE"
+   -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
+   -Wno-dev
   - make
   - make install
   - cd ../..
