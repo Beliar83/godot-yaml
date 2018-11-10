@@ -8,19 +8,19 @@ addons:
     - p7zip
 git:
   submodules: false
-script: 
-  - git submodule update --init --recursive godot-cpp
-  - cd godot-cpp
-  - scons platform=osx headers=godot_headers generate_bindings=yes target=release
-  - cd ..
-  - scons platform=osx target=release 
+script:
+- git submodule update --init --recursive godot-cpp
+- cd godot-cpp
+- scons platform=osx headers=godot_headers generate_bindings=yes target=release
+- cd ..
+- scons platform=osx target=release
 before_deploy:
-  - cd demo/bin
-  - 7z a -t7z -mx9 "${TRAVIS_BUILD_DIR}/godot-yaml-${TRAVIS_BUILD_NUMBER}-osx-release.7z"
+- cd demo/bin
+- 7z a -t7z -mx9 "${TRAVIS_BUILD_DIR}/godot-yaml-${TRAVIS_BUILD_NUMBER}-osx-release.7z"
 deploy:
   provider: releases
   api_key:
-    secure: 4dm7uTzjL+0fOu5k6huo2PbcGhxj0e7RbXHtkdjiQ1maMLunSup7bdXP4+L58wDV
+    secure: FyGjN0vBUwdM5EmF6msNTSaP5y1vJ4wV6dHNyESIbAuUpoQCbh+UTi4Gt+BW2QZw31O1YPs+9nqSAHEv150qoQmhPK7tTKG7MCEQImdA+v4Y7p1YDlEi7OIMppWz6DNzB7oiZi8x0uOIP7Vsi1Iys+0OqSId/YfZfeVhGqgTR9yEycsOfo+dWfcfewuXVKTuAjla1uuxOcSjxWKUzCPQPp2K+FUYr04rTQ+7YqSWnbs8m54TrBJFCjK8v/vEQCU8Xrw0Nwc90qpav68Fr1ThZLa8ZMJRnriOmthXGfJxeCbWT373xfa/ztg/euaWyYUICGY+viaHRPzZJbbvzuXPQ47/N2em0PHeph8FEyMfHDFHa1+SSV51SBjbLFnvM4j6cnufUpZbqefQv5EmXL7m+3Qp8MR7Hgt9rRmaN23+PZcCug522HdtMxYzAPzNttN9wxCfjSR53OMXdIlrVvu9V03Q/FSyuu1vvW7IsIdwj8ZA94/B8QnnqqyNrGOjiJ7mmF2mUhFdWw20ORVY60T1GYt2Dq9MmnVy9IZV24VdOHEzYrB6gVMNPwAWhbgyXTG1woPVy4biCnjMabPIoQZoFh0Q827vkbXNVCAfJYxKT+yRr0nEF9XaKmFqWRbu96cRaLbujDGz5vJuqnHU/9nR81Otoa8bnZq34xavkBVQePo=
   file: "${TRAVIS_BUILD_DIR}/godot-yaml-${TRAVIS_BUILD_NUMBER}-osx-release.7z"
   skip_cleanup: true
   on:
