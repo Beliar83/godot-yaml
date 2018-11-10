@@ -113,7 +113,7 @@ build_script:
   # install
   - cmd: cmake --build . --target INSTALL --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make install
-  - cd ../..
+  - cd ..
   - cd godot-yaml/godot-cpp
   - dir
   - ps: scons --version
