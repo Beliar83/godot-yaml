@@ -1,5 +1,9 @@
 os: osx
 language: cpp
+addons:
+  homebrew:
+    packages:
+    - scons
 script: 
   - cd yaml-cpp
   - mkdir build
