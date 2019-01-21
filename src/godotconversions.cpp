@@ -484,8 +484,12 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 	} catch (::YAML::TypedBadConversion<double> err) {
 	}
 	try {
-		variant = node.as<bool>();
-		return true;
+		const std::string str = node.as<std::string>();
+		if (str == "true" || str == "false") {
+			variant = node.as<bool>();
+			return true;
+		}
+		throw ::YAML::TypedBadConversion<bool>(node.Mark());
 	} catch (::YAML::TypedBadConversion<bool> err) {
 	}
 	// Probably catches anything else (except empty values)
