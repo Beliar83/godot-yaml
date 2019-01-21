@@ -454,7 +454,7 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 			return false;
 		} // namespace YAML
 	}
-	if (node.Tag != "!") {
+	if (node.Tag() != "!") {
 		// Try to determine the type, first match will return, so order will matter.
 		if (node.IsNull()) {
 			variant = Variant();
