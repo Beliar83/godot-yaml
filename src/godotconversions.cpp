@@ -246,8 +246,17 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			break;
 		}
 		case Variant::STRING: {
-			String string = rhs.operator String();
-			node = string.alloc_c_string();
+			String string = rhs.operator String();			
+			std::string str_val = std::string(string.alloc_c_string());			
+			node = str_val;
+			godot::Variant check;
+			decode(node, check);
+			if (check.get_type() != Variant::STRING)
+			{
+				str_val.insert(str_val.begin(), '\"');
+				str_val.append('\"');
+				node = str_val;
+			}
 			break;
 		}
 		case Variant::BOOL: {
