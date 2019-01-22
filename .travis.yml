@@ -8,7 +8,7 @@ addons:
     - scons
     - yaml-cpp
     - p7zip
-   apt:
+  apt:
     packages:
     - p7zip-full
     - yaml-cpp
