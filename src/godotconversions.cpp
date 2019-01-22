@@ -253,7 +253,7 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			decode(node, check);
 			if (check.get_type() != Variant::STRING)
 			{
-				str_val.insert(str_val.begin(), "\"");
+				str_val.insert(str_val.begin(), '\"');
 				str_val.append("\"");
 				node = str_val;
 			}
