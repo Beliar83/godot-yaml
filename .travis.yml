@@ -10,8 +10,8 @@ addons:
     - p7zip
    apt:
     packages:
-      - p7zip-full
-      - yaml-cpp
+    - p7zip-full
+    - yaml-cpp
 git:
   submodules: false
 script:
