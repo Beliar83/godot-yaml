@@ -45,12 +45,12 @@ void encode_vector3(Node &node, const Vector3 &vec3) {
 }
 
 void encode_rect2(Node &node, const Rect2 &rec2) {
-	node["pos"] = static_cast<Variant>(rec2.pos);
+	node["position"] = static_cast<Variant>(rec2.pos);
 	node["size"] = static_cast<Variant>(rec2.size);
 }
 
 void encode_aabb(Node &node, const AABB &aabb) {
-	node["pos"] = static_cast<Variant>(aabb.position);
+	node["position"] = static_cast<Variant>(aabb.position);
 	node["size"] = static_cast<Variant>(aabb.size);
 }
 
@@ -60,8 +60,8 @@ void encode_transform(Node &node, const Transform &transf) {
 }
 
 void encode_transform2d(Node &node, const Transform2D &transf2d) {
-	node["x_axis"] = static_cast<Variant>(transf2d.elements[0]);
-	node["y_axis"] = static_cast<Variant>(transf2d.elements[1]);
+	node["x"] = static_cast<Variant>(transf2d.elements[0]);
+	node["y"] = static_cast<Variant>(transf2d.elements[1]);
 	node["origin"] = static_cast<Variant>(transf2d.elements[2]);
 }
 
@@ -127,13 +127,13 @@ Vector3 decode_vector3(const Node &node) {
 }
 
 Rect2 decode_rect2(const Node &node) {
-	Vector2 pos = node["pos"].as<Variant>();
+	Vector2 pos = node["position"].as<Variant>();
 	Vector2 size = node["size"].as<Variant>();
 	return Rect2(pos, size);
 }
 
 AABB decode_aabb(const Node &node) {
-	Vector3 pos = node["pos"].as<Variant>();
+	Vector3 pos = node["position"].as<Variant>();
 	Vector3 size = node["size"].as<Variant>();
 	return AABB(pos, size);
 }
@@ -145,8 +145,8 @@ Transform decode_transform(const Node &node) {
 }
 
 Transform2D decode_transform2d(const Node &node) {
-	Vector2 x_axis = node["x_axis"].as<Variant>();
-	Vector2 y_axis = node["y_axis"].as<Variant>();
+	Vector2 x_axis = node["x"].as<Variant>();
+	Vector2 y_axis = node["y"].as<Variant>();
 	Vector2 origin = node["origin"].as<Variant>();
 	return Transform2D(x_axis.x, x_axis.y, y_axis.x, y_axis.y, origin.x, origin.y);
 }
@@ -208,7 +208,7 @@ Node convert<Variant>::encode(const Variant &rhs) {
 	YAML::Node node;
 	std::ostringstream oss;
 	Variant::Type var_type = rhs.get_type();
-	oss << "Godot/Variant/" << type_names[var_type];
+	oss << "Godot/" << type_names[var_type];
 	bool needsTag = false;
 	switch (var_type) {
 		case Variant::NIL: {
@@ -325,165 +325,160 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 	if (!tokens.empty()) {
 		std::string token_godot = tokens[0];
 		std::transform(token_godot.begin(), token_godot.end(), token_godot.begin(), ::tolower);
-		std::string token_class = tokens[1];
-		std::transform(token_class.begin(), token_class.end(), token_class.begin(), ::tolower);
-		if (token_godot == "godot") {
-			if (token_class == "variant") {
-				Variant::Type var_type;
-				std::string type_value = tokens[2];
-				std::transform(type_value.begin(), type_value.end(), type_value.begin(), ::tolower);
-				bool found = false;
-				for (std::map<Variant::Type, std::string>::iterator it = type_names.begin(); it != type_names.end(); ++it) {
-					std::string value = it->second;
-					std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-					if (value == type_value) {
-						var_type = it->first;
-						found = true;
-						break;
-					}
+		if (token_godot == "godot" && tokens.size() == 2) {
+			Variant::Type var_type;
+			std::string type_value = tokens[1];
+			std::transform(type_value.begin(), type_value.end(), type_value.begin(), ::tolower);
+			bool found = false;
+			for (std::map<Variant::Type, std::string>::iterator it = type_names.begin(); it != type_names.end(); ++it) {
+				std::string value = it->second;
+				std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+				if (value == type_value) {
+					var_type = it->first;
+					found = true;
+					break;
 				}
-				if (!found) {
-					var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
-				}
-				switch (var_type) {
-					case Variant::NIL: {
-						variant = Variant();
-						break;
-					}
-					case Variant::VECTOR2: {
-						variant = decode_vector2(node);
-						break;
-					}
-					case Variant::VECTOR3: {
-						variant = decode_vector3(node);
-						break;
-					}
-					case Variant::POOL_INT_ARRAY: {
-						godot::Array array = Array();
-						decode_array(node, array);
-						variant = godot::PoolIntArray(array);
-						break;
-					}
-					case Variant::POOL_REAL_ARRAY: {
-						godot::Array array = Array();
-						decode_array(node, array);
-						variant = godot::PoolRealArray(array);
-						break;
-					}
-					case Variant::POOL_STRING_ARRAY: {
-						godot::Array array = Array();
-						decode_array(node, array);
-						variant = godot::PoolStringArray(array);
-						break;
-					}
-					case Variant::POOL_VECTOR2_ARRAY: {
-						godot::Array array = Array();
-						decode_array(node, array);
-						variant = godot::PoolVector2Array(array);
-						break;
-					}
-					case Variant::POOL_VECTOR3_ARRAY: {
-						godot::Array array = Array();
-						decode_array(node, array);
-						variant = godot::PoolVector3Array(array);
-						break;
-					}
-					case Variant::POOL_COLOR_ARRAY: {
-						godot::Array array = Array();
-						decode_array(node, array);
-						variant = godot::PoolColorArray(array);
-						break;
-					}
-					case Variant::INT: {
-						variant = node.as<int64_t>();
-						break;
-					}
-					case Variant::REAL: {
-						variant = node.as<double>();
-						break;
-					}
-					case Variant::STRING: {
-						variant = String(node.as<std::string>().c_str());
-						break;
-					}
-					case Variant::RECT2: {
-						variant = decode_rect2(node);
-						break;
-					}
-					case Variant::RECT3: {
-						variant = decode_aabb(node);
-						break;
-					}
-					case Variant::TRANSFORM: {
-						variant = decode_transform(node);
-						break;
-					}
-					case Variant::TRANSFORM2D: {
-						variant = decode_transform2d(node);
-						break;
-					}
-					case Variant::PLANE: {
-						variant = decode_plane(node);
-						break;
-					}
-					case Variant::QUAT: {
-						variant = decode_quat(node);
-						break;
-					}
-					case Variant::BASIS: {
-						variant = decode_basis(node);
-						break;
-					}
-					case Variant::COLOR: {
-						variant = decode_color(node);
-						break;
-					}
-					case Variant::NODE_PATH: {
-						variant = decode_node_path(node);
-						break;
-					}
-					default: {
-						std::stringstream message;
-						message << "Variant type " << var_type << " not yet supported";
-						Godot::print(message.str().c_str());
-						return false;
-					}
-				}
-				return true;
 			}
-			return false;
-		} // namespace YAML
-	}
+			if (!found) {
+				var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
+			}
+			switch (var_type) {
+				case Variant::NIL: {
+					variant = Variant();
+					break;
+				}
+				case Variant::VECTOR2: {
+					variant = decode_vector2(node);
+					break;
+				}
+				case Variant::VECTOR3: {
+					variant = decode_vector3(node);
+					break;
+				}
+				case Variant::POOL_INT_ARRAY: {
+					godot::Array array = Array();
+					decode_array(node, array);
+					variant = godot::PoolIntArray(array);
+					break;
+				}
+				case Variant::POOL_REAL_ARRAY: {
+					godot::Array array = Array();
+					decode_array(node, array);
+					variant = godot::PoolRealArray(array);
+					break;
+				}
+				case Variant::POOL_STRING_ARRAY: {
+					godot::Array array = Array();
+					decode_array(node, array);
+					variant = godot::PoolStringArray(array);
+					break;
+				}
+				case Variant::POOL_VECTOR2_ARRAY: {
+					godot::Array array = Array();
+					decode_array(node, array);
+					variant = godot::PoolVector2Array(array);
+					break;
+				}
+				case Variant::POOL_VECTOR3_ARRAY: {
+					godot::Array array = Array();
+					decode_array(node, array);
+					variant = godot::PoolVector3Array(array);
+					break;
+				}
+				case Variant::POOL_COLOR_ARRAY: {
+					godot::Array array = Array();
+					decode_array(node, array);
+					variant = godot::PoolColorArray(array);
+					break;
+				}
+				case Variant::INT: {
+					variant = node.as<int64_t>();
+					break;
+				}
+				case Variant::REAL: {
+					variant = node.as<double>();
+					break;
+				}
+				case Variant::STRING: {
+					variant = String(node.as<std::string>().c_str());
+					break;
+				}
+				case Variant::RECT2: {
+					variant = decode_rect2(node);
+					break;
+				}
+				case Variant::RECT3: {
+					variant = decode_aabb(node);
+					break;
+				}
+				case Variant::TRANSFORM: {
+					variant = decode_transform(node);
+					break;
+				}
+				case Variant::TRANSFORM2D: {
+					variant = decode_transform2d(node);
+					break;
+				}
+				case Variant::PLANE: {
+					variant = decode_plane(node);
+					break;
+				}
+				case Variant::QUAT: {
+					variant = decode_quat(node);
+					break;
+				}
+				case Variant::BASIS: {
+					variant = decode_basis(node);
+					break;
+				}
+				case Variant::COLOR: {
+					variant = decode_color(node);
+					break;
+				}
+				case Variant::NODE_PATH: {
+					variant = decode_node_path(node);
+					break;
+				}
+				default: {
+					std::stringstream message;
+					message << "Variant type " << var_type << " not yet supported";
+					Godot::print(message.str().c_str());
+					return false;
+				}
+			}
+			return true;
+		}
+	} // namespace YAML
 	if (node.Tag() != "!") {
-		// Try to determine the type, first match will return, so order will matter.
-		if (node.IsNull()) {
-			variant = Variant();
-			// Godot::print("Determined: Nil");
-			return true;
-		}
-		if (node.IsSequence()) {
-			Array array = Array();
-			// Godot::print("Determined: Array");
-			decode_array(node, array);
-			variant = array;
-			return true;
-		}
-		if (node.IsMap()) {
-			variant = decode_dictionary(node);
-			return true;
-		}
-		try {
-			variant = node.as<int64_t>();
-			// Godot::print("Determined: Int64");
-			return true;
-		} catch (::YAML::TypedBadConversion<int64_t> err) {
-		}
-		try {
-			variant = node.as<double>();
-			// Godot::print("Determined: Real");
-			return true;
-		} catch (::YAML::TypedBadConversion<double> err) {
-		}
+    // Try to determine the type, first match will return, so order will matter.
+    if (node.IsNull()) {
+      variant = Variant();
+      // Godot::print("Determined: Nil");
+      return true;
+    }
+    if (node.IsSequence()) {
+      Array array = Array();
+      // Godot::print("Determined: Array");
+      decode_array(node, array);
+      variant = array;
+      return true;
+    }
+    if (node.IsMap()) {
+      variant = decode_dictionary(node);
+      return true;
+    }
+    try {
+      variant = node.as<int64_t>();
+      // Godot::print("Determined: Int64");
+      return true;
+    } catch (::YAML::TypedBadConversion<int64_t> err) {
+    }
+    try {
+      variant = node.as<double>();
+      // Godot::print("Determined: Real");
+      return true;
+    } catch (::YAML::TypedBadConversion<double> err) {
+    }
 		try {
 			const std::string str = node.as<std::string>();
 			if (str == "true" || str == "false") {
@@ -493,6 +488,7 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 			throw ::YAML::TypedBadConversion<bool>(node.Mark());
 		} catch (::YAML::TypedBadConversion<bool> err) {
 		}
+
 	}
 	// Probably catches anything else (except empty values)
 	try {
