@@ -42,5 +42,8 @@ Variant godot::YAML::parse(String text) {
 	} catch (::YAML::TypedBadConversion<Variant> &badConversionError) {
 		PrintParseError(badConversionError.msg, badConversionError.mark);
 		return Variant();
+	} catch (std::exception err) {
+		PrintParseError(std::string(err.what()), ::YAML::Mark::null_mark());
+		return false;
 	}
 }

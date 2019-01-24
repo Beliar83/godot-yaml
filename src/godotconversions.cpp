@@ -253,9 +253,9 @@ Node convert<Variant>::encode(const Variant &rhs) {
 			decode(node, check);
 			if (check.get_type() != Variant::STRING)
 			{
-				str_val.insert(str_val.begin(), '\"');
-				str_val.append("\"");
-				node = str_val;
+				YAML::Emitter quoted_string;				
+				quoted_string << YAML::DoubleQuoted << str_val;
+				node = quoted_string.c_str();
 			}
 			break;
 		}
@@ -458,44 +458,57 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 			return true;
 		}
 	} // namespace YAML
-	const std::string str = node.as<std::string>();
-	const char first_char = str.front();
-	if ((first_char != '\"' && first_char != '\'') || str.back() != first_char)
+	// Try to determine the type, first match will return, so order will matter.
+	if (node.IsNull()) {
+		variant = Variant();
+		//Godot::print("Determined: Nil");
+		return true;
+	}
+	if (node.IsSequence()) {
+		Array array = Array();
+		//Godot::print("Determined: Array");
+		decode_array(node, array);
+		variant = array;
+		return true;
+	}
+	if (node.IsMap()) {
+		variant = decode_dictionary(node);
+		//Godot::print("Determined: Dictionary");
+		return true;
+	}
+	std::string str;
+	try {
+		str = node.as<std::string>();
+	}
+	catch (::YAML::TypedBadConversion<std::string> err) {
+		Godot::print(String(err.msg.c_str()));
+		return false;
+	}
+	if (node.Tag() != "!")
 	{
-		// Try to determine the type, first match will return, so order will matter.
-		if (node.IsNull()) {
-			variant = Variant();
-			// Godot::print("Determined: Nil");
-			return true;
-		}
-		if (node.IsSequence()) {
-			Array array = Array();
-			// Godot::print("Determined: Array");
-			decode_array(node, array);
-			variant = array;
-			return true;
-		}
-		if (node.IsMap()) {
-			variant = decode_dictionary(node);
-			return true;
-		}
 		try {
+			//Godot::print("Trying: Int64");
 			variant = node.as<int64_t>();
-			// Godot::print("Determined: Int64");
+			//Godot::print("Determined: Int64");
 			return true;
 		} catch (::YAML::TypedBadConversion<int64_t> err) {
 		}
 		try {
+			//Godot::print("Trying: Real");
 			variant = node.as<double>();
-			// Godot::print("Determined: Real");
+			//Godot::print("Determined: Real");
 			return true;
 		} catch (::YAML::TypedBadConversion<double> err) {
 		}
 		try {
-			std::string decapitalised_str;
-			std::transform(str.begin(), str.begin() + 1, decapitalised_str.begin(), ::tolower);
+			//Godot::print("Trying: Boolean");
+			std::string decapitalised_str = str;
+			if (str.length() > 1) {
+				std::transform(str.begin(), str.begin() + 1, decapitalised_str.begin(), ::tolower);
+			}
 			if (decapitalised_str == "true" || decapitalised_str == "false") {
 				variant = node.as<bool>();
+				//Godot::print("Determined: Boolean");
 				return true;
 			}
 			throw ::YAML::TypedBadConversion<bool>(node.Mark());
@@ -504,8 +517,8 @@ bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
 	}
 	// Probably catches anything else (except empty values)
 	try {
+		//Godot::print("Guessed: String");
 		variant = String(str.c_str());
-		// Godot::print("Guessed: String");
 		return true;
 	} catch (::YAML::TypedBadConversion<std::string> err) {
 	}
