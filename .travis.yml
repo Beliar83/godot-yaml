@@ -1,5 +1,7 @@
 os: osx
 language: cpp
+before_install:
+  - brew update
 addons:
   homebrew:
     packages:
