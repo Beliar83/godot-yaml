@@ -1,13 +1,12 @@
 os: osx
 language: cpp
-before_install:
-  - brew update
 addons:
   homebrew:
     packages:
     - scons
     - yaml-cpp
     - p7zip
+    update: true
 git:
   submodules: false
 script:
