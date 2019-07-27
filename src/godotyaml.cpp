@@ -17,6 +17,9 @@ godot::YAML::~YAML() {
 	// add your cleanup here
 }
 
+void godot::YAML::_init() {
+}
+
 String godot::YAML::print(Variant p_value) {
 	::YAML::Node node;
 	node = p_value;

@@ -1,8 +1,8 @@
 #include "godotyaml.h"
-#include <Reference.hpp>
 #include <core/Array.hpp>
 #include <core/Godot.hpp>
 #include <core/String.hpp>
+#include <gen/Reference.hpp>
 
 using namespace godot;
 
@@ -16,6 +16,5 @@ extern "C" void GDN_EXPORT godot_gdnative_terminate(godot_gdnative_terminate_opt
 
 extern "C" void GDN_EXPORT godot_nativescript_init(void *handle) {
 	godot::Godot::nativescript_init(handle);
-
 	register_class<YAML>();
 }

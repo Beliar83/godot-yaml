@@ -4,8 +4,8 @@
 
 #include "godotconversions.h"
 #include <yaml-cpp/yaml.h>
-#include <Godot.hpp>
-#include <Variant.hpp>
+#include <core/Godot.hpp>
+#include <core/Variant.hpp>
 
 using namespace godot;
 
@@ -45,7 +45,7 @@ void encode_vector3(Node &node, const Vector3 &vec3) {
 }
 
 void encode_rect2(Node &node, const Rect2 &rec2) {
-	node["position"] = static_cast<Variant>(rec2.pos);
+	node["position"] = static_cast<Variant>(rec2.position);
 	node["size"] = static_cast<Variant>(rec2.size);
 }
 
