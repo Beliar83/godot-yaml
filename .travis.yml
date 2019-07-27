@@ -14,7 +14,7 @@ script:
 - cd godot-cpp
 - scons platform=osx headers=godot_headers generate_bindings=yes target=release
 - cd ..
-- scons platform=osx target=release
+- scons platform=osx target=release use_llvm=true
 before_deploy:
 - cd demo/bin
 - 7z a -t7z -mx9 "${TRAVIS_BUILD_DIR}/godot-yaml-${TRAVIS_BUILD_NUMBER}-osx-release.7z"
