@@ -14,10 +14,6 @@ configuration:
 
 environment:
   matrix:
-    -
-      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-      build_os: linux
-      generator_x64: "Unix Makefiles"
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       build_os: windows
