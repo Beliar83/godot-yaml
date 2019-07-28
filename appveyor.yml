@@ -19,11 +19,11 @@ environment:
       build_os: linux
       generator_x64: "Unix Makefiles"
     - 
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       build_os: windows
       MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
-      generator: "Visual Studio 16"
-      generator_x64: "Visual Studio 16 Win64"
+      generator: "Visual Studio 15"
+      generator_x64: "Visual Studio 15 Win64"
       PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
 
@@ -122,7 +122,7 @@ build_script:
   - dir
   - ps: scons --version
   - ps: ${env:g_cpp_target} = ${env:CONFIGURATION}.ToLower()
-  - ps: scons platform=${env:build_os} arch=${env:bits} headers=godot_headers generate_bindings=yes target="${env:g_cpp_target}"
+  - ps: scons platform=${env:build_os} bits=${env:bits} generate_bindings=yes target="${env:g_cpp_target}"
   - cd ..
   - ps: scons platform=${env:build_os} target=${env:CONFIGURATION} bits=${env:bits}
 
