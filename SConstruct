@@ -49,27 +49,26 @@ if env['platform'] == '':
 if env['platform'] == "osx":
     env['target_path'] += 'osx/'
     cpp_library += '.osx'
+    env.Append(LIBPATH=[cpp_bindings_path + 'bin/'])
+    env.Append(LIBS=["libyaml-cpp"])
     if env['target'] in ('debug', 'd'):
         env.Append(CCFLAGS=['-g', '-O2', '-arch', 'x86_64', '-std=c++14'])
         env.Append(LINKFLAGS=['-arch', 'x86_64'])
-        env.Append(LIBS=["libyaml-cppd"])
     else:
         env.Append(CCFLAGS=['-g', '-O3', '-arch', 'x86_64', '-std=c++14'])
         env.Append(LINKFLAGS=['-arch', 'x86_64'])
-        env.Append(LIBS=["libyaml-cpp"])
 
 elif env['platform'] in ('x11', 'linux'):
     env['target_path'] += 'x11/'
     cpp_library += '.linux'
     env.Append(LIBPATH=[cpp_bindings_path + 'bin/', 'yaml-cpp_install/lib'])
+    env.Append(LIBS=["libyaml-cpp"])
     if env['target'] in ('debug', 'd'):
         env.Append(CCFLAGS=['-fPIC', '-g3', '-Og'])
         env.Append(CXXFLAGS=['-std=c++17'])
-        env.Append(LIBS=["libyaml-cppd"])
     else:
         env.Append(CCFLAGS=['-fPIC', '-g', '-O3'])
         env.Append(CXXFLAGS=['-std=c++17'])
-        env.Append(LIBS=["libyaml-cpp"])
 
 elif env['platform'] == "windows":
     env['target_path'] += 'win64/'
