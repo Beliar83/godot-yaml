@@ -52,9 +52,11 @@ if env['platform'] == "osx":
     if env['target'] in ('debug', 'd'):
         env.Append(CCFLAGS=['-g', '-O2', '-arch', 'x86_64', '-std=c++14'])
         env.Append(LINKFLAGS=['-arch', 'x86_64'])
+        env.Append(LIBS=["libyaml-cppd"])
     else:
         env.Append(CCFLAGS=['-g', '-O3', '-arch', 'x86_64', '-std=c++14'])
         env.Append(LINKFLAGS=['-arch', 'x86_64'])
+        env.Append(LIBS=["libyaml-cpp"])
 
 elif env['platform'] in ('x11', 'linux'):
     env['target_path'] += 'x11/'
@@ -63,9 +65,11 @@ elif env['platform'] in ('x11', 'linux'):
     if env['target'] in ('debug', 'd'):
         env.Append(CCFLAGS=['-fPIC', '-g3', '-Og'])
         env.Append(CXXFLAGS=['-std=c++17'])
+        env.Append(LIBS=["libyaml-cppd"])
     else:
         env.Append(CCFLAGS=['-fPIC', '-g', '-O3'])
         env.Append(CXXFLAGS=['-std=c++17'])
+        env.Append(LIBS=["libyaml-cpp"])
 
 elif env['platform'] == "windows":
     env['target_path'] += 'win64/'
@@ -81,16 +85,16 @@ elif env['platform'] == "windows":
         env.Append(CPPDEFINES=['_DEBUG'])
         env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI'])
         env.Append(LINKFLAGS=['-DEBUG'])
+        env.Append(LIBS=["libyaml-cppmdd"])
     else:
         env.Append(CPPDEFINES=['NDEBUG'])
         env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
+        env.Append(LIBS=["libyaml-cppmd"])
 
 if env['target'] in ('debug', 'd'):
     cpp_library += '.debug'
-    env.Append(LIBS=["libyaml-cppmdd"])
 else:
     cpp_library += '.release'
-    env.Append(LIBS=["libyaml-cppmd"])
 
 cpp_library += '.' + str(bits)
 
