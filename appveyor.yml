@@ -120,6 +120,7 @@ build_script:
   - ps: ${env:g_cpp_target} = ${env:CONFIGURATION}.ToLower()
   - ps: scons platform=${env:build_os} bits=${env:bits} generate_bindings=yes target="${env:g_cpp_target}"
   - cd ..
+  - ps: $blockRdp = $true;
   - ps: scons platform=${env:build_os} target=${env:CONFIGURATION} bits=${env:bits}
 
 after_build:
