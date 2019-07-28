@@ -59,6 +59,7 @@ if env['platform'] == "osx":
 elif env['platform'] in ('x11', 'linux'):
     env['target_path'] += 'x11/'
     cpp_library += '.linux'
+    env.Append(LIBPATH=[cpp_bindings_path + 'bin/', 'yaml-cpp_install/lib'])
     if env['target'] in ('debug', 'd'):
         env.Append(CCFLAGS=['-fPIC', '-g3', '-Og'])
         env.Append(CXXFLAGS=['-std=c++17'])
@@ -75,26 +76,26 @@ elif env['platform'] == "windows":
 
     env.Append(CPPDEFINES=['WIN32', '_WIN32', '_WINDOWS', '_CRT_SECURE_NO_WARNINGS'])
     env.Append(CCFLAGS=['-W3', '-GR'])
+    env.Append(LIBPATH=[cpp_bindings_path + 'bin/', 'yaml-cpp_install/lib'])
     if env['target'] in ('debug', 'd'):
         env.Append(CPPDEFINES=['_DEBUG'])
         env.Append(CCFLAGS=['-EHsc', '-MDd', '-ZI'])
         env.Append(LINKFLAGS=['-DEBUG'])
-        env.Append(LIBS=["libyaml-cppmdd"])
     else:
         env.Append(CPPDEFINES=['NDEBUG'])
         env.Append(CCFLAGS=['-O2', '-EHsc', '-MD'])
-        env.Append(LIBS=["libyaml-cppmd"])
 
 if env['target'] in ('debug', 'd'):
     cpp_library += '.debug'
+    env.Append(LIBS=["libyaml-cppmdd"])
 else:
     cpp_library += '.release'
+    env.Append(LIBS=["libyaml-cppmd"])
 
 cpp_library += '.' + str(bits)
 
 # make sure our binding library is properly includes
 env.Append(CPPPATH=['.', godot_headers_path, cpp_bindings_path + 'include/', cpp_bindings_path + 'include/core/', cpp_bindings_path + 'include/gen/', "yaml-cpp/include/"])
-env.Append(LIBPATH=[cpp_bindings_path + 'bin/', 'yaml-cpp_install/lib'])
 env.Append(LIBS=[cpp_library])
 
 # tweak this if you want to use different folders, or more folders, to store your source code in.
