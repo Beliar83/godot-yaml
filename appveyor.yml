@@ -70,6 +70,10 @@ init:
         {
             ${env:COMPILER}="MSVC15"
         }
+        elseif (${env:cmake_generator} -like "Visual Studio 16*")
+        {
+            ${env:COMPILER}="MSVC16"
+        }
         elseif (${env:cmake_generator} -eq "Unix Makefiles")
         {
             ${env:COMPILER}="GCC"
