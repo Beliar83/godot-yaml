@@ -14,20 +14,18 @@ configuration:
 
 environment:
   matrix:
-    -
-      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
-      build_os: linux
-      generator_x64: "Unix Makefiles"
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       build_os: windows
       MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
       generator: "Visual Studio 16"
-      cmake_platform: Win32
       generator_x64: "Visual Studio 16"
-      cmake_platform_x64: x64
       PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6"
+    -
+      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+      build_os: linux
+      generator_x64: "Unix Makefiles"
 
 matrix:
   fast_finish: true
@@ -57,13 +55,13 @@ init:
       {
         ${env:cmake_generator}=${env:generator}
         ${env:bits}=32
-        ${env:cmake_platform}=${cmake_platform}
+        ${env:cmake_platform}="Win32"
       }
       elseif (${env:PLATFORM} -eq "x64")
       {
         ${env:cmake_generator}=${env:generator_x64}
         ${env:bits}=64
-        ${env:cmake_platform}=${cmake_platform_x64}
+        ${env:cmake_platform}="x64"
       }
       else
       {
@@ -101,7 +99,7 @@ build_script:
   - cmd: >- 
         cmake ../ 
         -G "%cmake_generator%"
-        -A %cmake_platform%
+        -A "%cmake_platform%"
         -DCMAKE_INSTALL_PREFIX="../../yaml-cpp_install" 
         -DYAML_CPP_BUILD_TESTS="OFF"
         -DYAML_CPP_BUILD_TOOLS="OFF"
