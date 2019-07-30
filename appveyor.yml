@@ -151,6 +151,6 @@ deploy:
   prerelease: false
   force_update: true               # overwrite files of existing release on GitHub
   on:
-    appveyor_repo_tag: true        # deploy on tag push only
+    APPVEYOR_REPO_TAG: true        # deploy on tag push only
   auth_token:                      # encrypted token from GitHub
     secure: 4dm7uTzjL+0fOu5k6huo2PbcGhxj0e7RbXHtkdjiQ1maMLunSup7bdXP4+L58wDV
