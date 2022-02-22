@@ -1,6 +1,6 @@
 #include <yaml-cpp/yaml.h>
-#include <Godot.hpp>
-#include <Variant.hpp>
+#include <core/Godot.hpp>
+#include <core/Variant.hpp>
 
 using namespace godot;
 
