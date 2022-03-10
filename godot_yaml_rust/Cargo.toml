@@ -1,0 +1,16 @@
+[package]
+name = "godot_yaml_rust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+godot = {path = "../godot"}
+serde_yaml = "0.8"
+cxx = "1.0"
+
+[build-dependencies]
+cxx-build = "1.0"

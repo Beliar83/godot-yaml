@@ -5,9 +5,7 @@
 #include <gen/Reference.hpp>
 #include <gen/NativeScript.hpp>
 
-namespace godot {
-
-class YAML : public Reference {
+class YAML : public godot::Reference {
 	GODOT_CLASS(YAML, Reference)
 
 public:
@@ -18,10 +16,8 @@ public:
 
 	void _init();
 
-	String print(Variant p_value);
-	Variant parse(String text);
+	::godot::String print(::godot::Variant p_value);
+	::godot::Variant parse(::godot::String text);
 };
-
-} // namespace godot
 
 #endif
