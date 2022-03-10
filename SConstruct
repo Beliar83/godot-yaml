@@ -188,6 +188,8 @@ if host_platform == 'windows' and env['platform'] != 'android':
 
     opts.Update(env)
 
+rust_bits = env['bits']
+
 def add_sources(sources, directory):
     for file in os.listdir(directory):
         if file.endswith('.cpp'):
@@ -477,7 +479,7 @@ elif env['platform'] == 'android':
 
 
 elif env['platform'] == "javascript":
-    print('summator_rust: installing emscripen target for rust')
+    print('installing emscripen target for rust')
     process = subprocess.run('rustup target add wasm32-unknown-emscripten', shell=True)
     process.check_returncode()
     rust_libpath += '/wasm32-unknown-emscripten'
@@ -516,9 +518,9 @@ elif env['platform'] == "javascript":
         env.Append(CCFLAGS=['-O3'])
         command = command + ' --release'
         rust_libpath += '/release'
-    env.Append(CCFLAGS = ['-fPIC', '-std=c++14'])
+    env.Append(CPPFLAGS = ['-fPIC', '-std=c++14'])
     libpath = libpath + 'wasm/'
-    bits='wasm'
+    rust_bits='wasm'
     env.Append(LIBPATH=[os.path.abspath(rust_libpath)])
     print('LIBPATH: ' + os.path.abspath(rust_libpath))
     env.Append(LIBS=['godot_yaml_rust'])
@@ -532,14 +534,14 @@ rust_env = {
 old_dir = os.getcwd()
 os.chdir('godot_yaml_rust')
 
-print('godot-component-system: Compiling rust library')
+print('Compiling rust library')
 process = subprocess.run(command , shell=True, env=rust_env)
 process.check_returncode()
 os.chdir(old_dir)
 
 env.Append(CPPPATH=['.', 'src/', 'godot-cpp/godot-headers/', 'godot-cpp/include/', 'godot-cpp/include/core', 'godot-cpp/include/gen'])
 env.Append(LIBPATH=['godot-cpp/bin'])
-env.Append(LIBS=['libgodot-cpp' + '.' + env['platform'] + '.' + env['target'] + '.' + str(env['bits'])])
+env.Append(LIBS=['libgodot-cpp' + '.' + env['platform'] + '.' + env['target'] + '.' + str(rust_bits)])
 
 sources = []
 add_sources(sources, 'src')
