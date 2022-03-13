@@ -1,17 +1,16 @@
+#include <ryml_std.hpp>
+#include <c4/format.hpp>
 #include <regex>
 #include <sstream>
 #include <string>
-
 #include "godotconversions.h"
-#include <yaml-cpp/yaml.h>
-#include <core/Godot.hpp>
 #include <core/Variant.hpp>
+#include <map>
+#include <cstdio>
 
 using namespace godot;
 
-namespace YAML {
-
-std::map<Variant::Type, std::string> type_names =
+std::map<Variant::Type, const char*> TYPE_NAMES =
 		{
 			{ Variant::VECTOR2, "Vector2" },
 			{ Variant::RECT2, "Rect2" },
@@ -33,499 +32,555 @@ std::map<Variant::Type, std::string> type_names =
 			{ Variant::POOL_COLOR_ARRAY, "PoolColorArray" },
 		};
 
-void encode_vector2(Node &node, const Vector2 &vec2) {
-	node["x"] = vec2.x;
-	node["y"] = vec2.y;
+namespace c4 {
+namespace yml {
+
+void encode_vector_2(ryml::NodeRef *node, const Vector2 &vector_2) {
+	*node |= ryml::MAP;
+	node->append_child() << ryml::key("x") << vector_2.x;
+	node->append_child() << ryml::key("y") << vector_2.y;
 }
 
-void encode_vector3(Node &node, const Vector3 &vec3) {
-	node["x"] = vec3.x;
-	node["y"] = vec3.y;
-	node["z"] = vec3.z;
+Vector2 decode_vector_2(ryml::NodeRef const &node) {
+	Vector2 vector_2;
+	node["x"] >> vector_2.x;
+	node["y"] >> vector_2.y;
+	return vector_2;
 }
 
-void encode_rect2(Node &node, const Rect2 &rec2) {
-	node["position"] = static_cast<Variant>(rec2.position);
-	node["size"] = static_cast<Variant>(rec2.size);
+void encode_vector_3(ryml::NodeRef *node, const Vector3 &vector_3) {
+	*node |= ryml::MAP;
+	node->append_child() << ryml::key("x") << vector_3.x;
+	node->append_child() << ryml::key("y") << vector_3.y;
+	node->append_child() << ryml::key("z") << vector_3.z;
 }
 
-void encode_aabb(Node &node, const AABB &aabb) {
-	node["position"] = static_cast<Variant>(aabb.position);
-	node["size"] = static_cast<Variant>(aabb.size);
+Vector3 decode_vector_3(ryml::NodeRef const &node) {
+	Vector3 vector_3;
+	node["x"] >> vector_3.x;
+	node["y"] >> vector_3.y;
+	node["z"] >> vector_3.z;
+	return vector_3;
 }
 
-void encode_transform(Node &node, const Transform &transf) {
-	node["basis"] = static_cast<Variant>(transf.basis);
-	node["origin"] = static_cast<Variant>(transf.origin);
+void encode_rect_2(ryml::NodeRef *node, const Rect2 &rec_2) {
+	*node |= ryml::MAP;
+	auto position = node->append_child();
+	position |= ryml::MAP;
+	position << ryml::key("position");
+	position.append_child()	<< ryml::key("x") << rec_2.position.x;
+	position.append_child()	<< ryml::key("y") << rec_2.position.y;
+	auto size = node->append_child();
+	size |= ryml::MAP;
+	size << ryml::key("size");
+	size.append_child()	<< ryml::key("x") << rec_2.size.x;
+	size.append_child()	<< ryml::key("y") << rec_2.size.y;
 }
 
-void encode_transform2d(Node &node, const Transform2D &transf2d) {
-	node["x"] = static_cast<Variant>(transf2d.elements[0]);
-	node["y"] = static_cast<Variant>(transf2d.elements[1]);
-	node["origin"] = static_cast<Variant>(transf2d.elements[2]);
+Rect2 decode_rect_2(ryml::NodeRef const &node) {
+	Rect2 rect;
+	node["position"]["x"] >> rect.position.x;
+	node["position"]["y"] >> rect.position.y;
+	node["size"]["x"] >> rect.size.x;
+	node["size"]["y"] >> rect.size.y;
+	return rect;
 }
 
-void encode_plane(Node &node, const Plane &plane) {
-	node["normal"] = static_cast<Variant>(plane.normal);
-	node["d"] = static_cast<Variant>(plane.d);
+void encode_aabb(ryml::NodeRef *node, const AABB &aabb) {
+	*node |= ryml::MAP;
+	auto position = node->append_child();
+	position |= ryml::MAP;
+	position << ryml::key("position");
+    encode_vector_3(&position, aabb.position);
+	auto size = node->append_child();
+	size |= ryml::MAP;
+	size << ryml::key("size");
+    encode_vector_3(&size, aabb.size);
 }
 
-void encode_quat(Node &node, const Quat &quat) {
-	node["w"] = static_cast<Variant>(quat.w);
-	node["x"] = static_cast<Variant>(quat.x);
-	node["y"] = static_cast<Variant>(quat.y);
-	node["z"] = static_cast<Variant>(quat.z);
+AABB decode_aabb(yml::NodeRef const &node) {
+	AABB aabb;
+	aabb.position = decode_vector_3(node["position"]);
+	aabb.size = decode_vector_3(node["size"]);
+	return aabb;
 }
 
-void encode_basis(Node &node, const Basis &basis) {
-	// Using basis.x, basis.y and basis.z leads to all 3 nodes being the same value.
-	node["x"] = static_cast<Variant>(basis.elements[0]);
-	node["y"] = static_cast<Variant>(basis.elements[1]);
-	node["z"] = static_cast<Variant>(basis.elements[2]);
+void encode_basis(ryml::NodeRef *node, const Basis &basis) {
+	*node |= ::ryml::MAP;
+	auto axis = node->append_child();
+	axis << ::ryml::key("x");
+    encode_vector_3(&axis, basis.elements[0]);
+
+	axis = node->append_child();
+	axis << ::ryml::key("y");
+    encode_vector_3(&axis, basis.elements[1]);
+
+	axis = node->append_child();
+	axis << ::ryml::key("z");
+    encode_vector_3(&axis, basis.elements[2]);
 }
 
-void encode_array(Node &node, const Array &arr) {
+Basis decode_basis(yml::NodeRef const &node) {
+    Vector3 x = decode_vector_3(node["x"]);
+    Vector3 y = decode_vector_3(node["y"]);
+    Vector3 z = decode_vector_3(node["z"]);
+    return {x, y, z};
+}
+
+
+void encode_transform(ryml::NodeRef *node, const Transform &transform) {
+	*node |= ryml::MAP;
+	auto basis = node->append_child();
+	basis << ryml::key("basis");
+	encode_basis(&basis, transform.basis);
+	auto origin = node->append_child();
+	origin << ryml::key("origin");
+    encode_vector_3(&origin, transform.origin);
+}
+
+Transform decode_transform(ryml::NodeRef const &node) {
+	Transform transform;
+	transform.basis = decode_basis(node["basis"]);
+	transform.origin = decode_vector_3(node["origin"]);
+	return transform;
+}
+
+void encode_transform_2_d(ryml::NodeRef *node, const Transform2D &transform_2_d) {
+	*node |= ryml::MAP;
+	auto x_axis = node->append_child();
+    x_axis << ryml::key("x");
+    encode_vector_2(&x_axis, transform_2_d.get_axis(0));
+	auto y_axis = node->append_child();
+    y_axis << ryml::key("y");
+    encode_vector_2(&y_axis, transform_2_d.get_axis(1));
+	auto origin = node->append_child();
+	origin << ryml::key("origin");
+    encode_vector_2(&origin, transform_2_d.get_origin());
+}
+
+Transform2D decode_transform_2_d(ryml::NodeRef const &node) {
+	Transform2D transform_2_d;
+    transform_2_d.set_axis(0, decode_vector_2(node["x"]));
+    transform_2_d.set_axis(1, decode_vector_2(node["y"]));
+    transform_2_d.set_origin(decode_vector_2(node["origin"]));
+	return transform_2_d;
+}
+
+void encode_plane(ryml::NodeRef *node, const Plane &plane) {
+	*node |= ryml::MAP;
+	auto normal = node ->append_child();
+	normal << ryml::key("normal");
+    encode_vector_3(&normal, plane.normal);
+	auto distance = node ->append_child();
+	distance << ryml::key("d") << plane.d;
+}
+
+Plane decode_plane(ryml::NodeRef const &node) {
+	Plane plane;
+	plane.normal = decode_vector_3(node["normal"]);
+	node["d"] >> plane.d;
+	return plane;
+}
+
+void encode_quat(ryml::NodeRef *node, const Quat &quat) {
+	*node |= ryml::MAP;
+	node->append_child() << ryml::key("x") << quat.x;
+	node->append_child() <<  ryml::key("y") << quat.y;
+	node->append_child() <<  ryml::key("z") << quat.z;
+	node->append_child() << ryml::key("w") << quat.w;
+}
+
+Quat decode_quat(ryml::NodeRef const &node) {
+	Quat quat;
+	node["x"] >> quat.x;
+	node["y"] >> quat.y;
+	node["z"] >> quat.z;
+	node["w"] >> quat.w;
+	return quat;
+}
+
+void encode_array(ryml::NodeRef *node, const Array &arr) {
+	*node |= ryml::SEQ;
 	for (int i = 0; i < arr.size(); ++i) {
-		node.push_back(arr[i]);
+		node->append_child() << arr[i];
 	}
 }
 
-void encode_dictionary(Node &node, const Dictionary &dict) {
+Array decode_array(ryml::NodeRef const &node) {
+	Array array;
+	for (auto child = node.begin(); child != node.end(); ++child) {
+		::godot::Variant variant;
+		*child >> variant;
+		array.push_back(variant);
+	}
+	return array;
+}
+
+void encode_dictionary(ryml::NodeRef *node, const Dictionary &dict) {
 	Array keys = dict.keys();
 	Array values = dict.values();
+	*node |= ryml::MAP;
 	for (int i = 0; i < keys.size(); ++i) {
 		Variant key = keys[i];
 		Variant value = values[i];
-		node[key] = value;
+		auto key_string = std::string(key.operator String().ascii().get_data());
+		node->append_child() << ::ryml::key(key_string) << value;
 	}
 }
 
-void encode_color(Node &node, const Color &color) {
-	node["r"] = static_cast<Variant>(color.r);
-	node["g"] = static_cast<Variant>(color.g);
-	node["b"] = static_cast<Variant>(color.b);
-	node["a"] = static_cast<Variant>(color.a);
-}
-
-void encode_node_path(Node &node, const NodePath &node_path) {
-	node = static_cast<Variant>(godot::String(node_path));
-}
-
-Vector2 decode_vector2(const Node &node) {
-	Vector2 rhs;
-	rhs.x = node["x"].as<real_t>();
-	rhs.y = node["y"].as<real_t>();
-	return rhs;
-}
-
-Vector3 decode_vector3(const Node &node) {
-	Vector3 rhs;
-	rhs.x = node["x"].as<real_t>();
-	rhs.y = node["y"].as<real_t>();
-	rhs.z = node["z"].as<real_t>();
-	return rhs;
-}
-
-Rect2 decode_rect2(const Node &node) {
-	Vector2 pos = node["position"].as<Variant>();
-	Vector2 size = node["size"].as<Variant>();
-	return Rect2(pos, size);
-}
-
-AABB decode_aabb(const Node &node) {
-	Vector3 pos = node["position"].as<Variant>();
-	Vector3 size = node["size"].as<Variant>();
-	return AABB(pos, size);
-}
-
-Transform decode_transform(const Node &node) {
-	Basis basis = node["basis"].as<Variant>();
-	Vector3 origin = node["origin"].as<Variant>();
-	return Transform(basis, origin);
-}
-
-Transform2D decode_transform2d(const Node &node) {
-	Vector2 x_axis = node["x"].as<Variant>();
-	Vector2 y_axis = node["y"].as<Variant>();
-	Vector2 origin = node["origin"].as<Variant>();
-	return Transform2D(x_axis.x, x_axis.y, y_axis.x, y_axis.y, origin.x, origin.y);
-}
-
-Plane decode_plane(const Node &node) {
-	float d = node["d"].as<Variant>();
-	Vector3 normal = node["normal"].as<Variant>();
-	return Plane(normal, d);
-}
-
-Quat decode_quat(const Node &node) {
-	float w = node["w"].as<Variant>();
-	float x = node["x"].as<Variant>();
-	float y = node["y"].as<Variant>();
-	float z = node["z"].as<Variant>();
-	return Quat(x, y, z, w);
-}
-
-Basis decode_basis(const Node &node) {
-	Vector3 x = node["x"].as<Variant>();
-	Vector3 y = node["y"].as<Variant>();
-	Vector3 z = node["z"].as<Variant>();
-	return Basis(x, y, z);
-}
-
-void decode_array(const Node &node, Array &array) {
-	for (YAML::const_iterator child = node.begin(); child != node.end(); ++child) {
-		array.push_back(child->as<Variant>());
-	}
-}
-
-Dictionary decode_dictionary(const Node &node) {
+Dictionary decode_dictionary(ryml::NodeRef const &node) {
 	Dictionary dict;
-	std::map<Variant, Variant> map = node.as<std::map<Variant, Variant>>();
-	typedef std::map<Variant, Variant>::const_iterator it_type;
-	for (it_type iterator = map.begin(); iterator != map.end(); ++iterator) {
-		dict[iterator->first] = iterator->second;
+	for (auto iterator = node.begin(); iterator != node.end(); ++iterator) {
+		auto child_node = *iterator;
+
+		auto key = String(std::string(child_node.key().data(), child_node.key().len).c_str());
+		Variant value;
+		node[child_node.key()] >> value;
+		dict[key] = value;
 	}
 	return dict;
 }
 
-Color decode_color(const Node &node) {
-	real_t r = node["r"].as<Variant>();
-	real_t g = node["g"].as<Variant>();
-	real_t b = node["b"].as<Variant>();
-	if (node["a"]) {
-		real_t a = node["a"].as<Variant>();
-		return Color(r, g, b, a);
-	} else {
-		return Color(r, g, b);
-	}
+void encode_color(ryml::NodeRef *node, const Color &color) {
+	*node |= ryml::MAP;
+	node->append_child() << ryml::key("r") << color.r;
+	node->append_child() << ryml::key("g") << color.g;
+	node->append_child() << ryml::key("b") << color.b;
+	node->append_child() << ryml::key("a") << color.a;
 }
 
-NodePath decode_node_path(const Node &node) {
-	return NodePath(godot::String(node.as<std::string>().c_str()));
+Color decode_color(ryml::NodeRef const &node) {
+	Color color;
+	node["r"] >> color.r;
+	node["g"] >> color.g;
+	node["b"] >> color.b;
+	if (node.has_child("a")) {
+		node["a"] >> color.a;
+	}
+	return color;
 }
 
-Node convert<Variant>::encode(const Variant &rhs) {
-	YAML::Node node;
-	std::ostringstream oss;
-	Variant::Type var_type = rhs.get_type();
-	oss << "Godot/" << type_names[var_type];
-	bool needsTag = false;
-	switch (var_type) {
-		case Variant::NIL: {
-			node = Null;
-			break;
-		}
-		case Variant::VECTOR2: {
-			needsTag = true;
-			encode_vector2(node, rhs);
-			break;
-		}
-		case Variant::VECTOR3: {
-			needsTag = true;
-			encode_vector3(node, rhs);
-			break;
-		}
-		case Variant::POOL_INT_ARRAY:
-		case Variant::POOL_REAL_ARRAY:
-		case Variant::POOL_STRING_ARRAY:
-		case Variant::POOL_VECTOR2_ARRAY:
-		case Variant::POOL_VECTOR3_ARRAY:
-		case Variant::POOL_COLOR_ARRAY:
-			// Pool arrays need a tag to correctly decode them as a pool.
-			needsTag = true;
-		case Variant::ARRAY: {
-			encode_array(node, rhs);
-			break;
-		}
-		case Variant::INT: {
-			node = (int)rhs;
-			break;
-		}
-		case Variant::REAL: {
-			node = (double)rhs;
-			break;
-		}
-		case Variant::STRING: {
-			String string = rhs.operator String();			
-			std::string str_val = std::string(string.alloc_c_string());			
-			node = str_val;
-			godot::Variant check;
-			decode(node, check);
-			if (check.get_type() != Variant::STRING)
-			{
-				YAML::Emitter quoted_string;				
-				quoted_string << YAML::DoubleQuoted << str_val;
-				node = quoted_string.c_str();
+void write(ryml::NodeRef *node, const ::godot::Variant &variant) {
+		Variant::Type var_type = variant.get_type();
+		bool needs_tag = false;
+		switch (var_type) {
+			case Variant::NIL: {
+				node->set_val(nullptr);
+				break;
 			}
-			break;
+			case Variant::VECTOR2: {
+                needs_tag = true;
+                encode_vector_2(node, variant);
+				break;
+			}
+			case Variant::VECTOR3: {
+                needs_tag = true;
+                encode_vector_3(node, variant);
+				break;
+			}
+			case Variant::POOL_INT_ARRAY:
+			case Variant::POOL_REAL_ARRAY:
+			case Variant::POOL_STRING_ARRAY:
+			case Variant::POOL_VECTOR2_ARRAY:
+			case Variant::POOL_VECTOR3_ARRAY:
+			case Variant::POOL_COLOR_ARRAY:
+			case Variant::POOL_BYTE_ARRAY:
+				// Pool arrays need a tag to correctly decode them as a pool.
+                needs_tag = true;
+			case Variant::ARRAY: {
+				encode_array(node, variant);
+				break;
+			}
+			case Variant::INT: {
+				*node << variant.operator int();
+				break;
+			}
+			case Variant::REAL: {
+				*node << variant.operator double ();
+				break;
+			}
+			case Variant::STRING: {
+				*node |= VALQUO;
+				String string = variant.operator String();
+				csubstr str_val = ::ryml::to_csubstr(string.alloc_c_string());
+				*node << str_val;
+				break;
+			}
+			case Variant::BOOL: {
+				if (variant.operator bool()) {
+					*node << "true";
+				} else {
+					*node << "false";
+				}
+				break;
+			}
+			case Variant::DICTIONARY: {
+				encode_dictionary(node, variant);
+				break;
+			}
+			case Variant::RECT2: {
+                encode_rect_2(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::RECT3: {
+				encode_aabb(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::TRANSFORM: {
+				encode_transform(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::TRANSFORM2D: {
+                encode_transform_2_d(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::PLANE: {
+				encode_plane(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::QUAT: {
+				encode_quat(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::BASIS: {
+				encode_basis(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::COLOR: {
+				encode_color(node, variant);
+                needs_tag = true;
+				break;
+			}
+			case Variant::NODE_PATH: {
+				*node |= VALQUO;
+				String string = variant.operator String();
+				csubstr str_val = ::ryml::to_csubstr(string.alloc_c_string());
+				*node << str_val;
+                needs_tag = true;
+				break;
+			}
+			default:
+				*node << Variant(variant.operator String());
+				break;
 		}
-		case Variant::BOOL: {
-			node = (bool)rhs;
+		if (needs_tag) {
+			auto buf = new char[256];
+			sprintf(buf, "Godot/%s", TYPE_NAMES[var_type]);
+			node->set_val_tag(ryml::to_csubstr(buf));
 		}
-		case Variant::DICTIONARY: {
-			encode_dictionary(node, rhs);
-			break;
-		}
-		case Variant::RECT2: {
-			encode_rect2(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::RECT3: {
-			encode_aabb(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::TRANSFORM: {
-			encode_transform(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::TRANSFORM2D: {
-			encode_transform2d(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::PLANE: {
-			encode_plane(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::QUAT: {
-			encode_quat(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::BASIS: {
-			encode_basis(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::COLOR: {
-			encode_color(node, rhs);
-			needsTag = true;
-			break;
-		}
-		case Variant::NODE_PATH: {
-			encode_node_path(node, rhs);
-			needsTag = true;
-			break;
-		}
-		default:
-			node = static_cast<Variant>(rhs.operator String());
-			break;
-	}
-	if (needsTag) {
-		node.SetTag(oss.str());
-	}
-	return node;
-}
 
-// Tries to convert a node to a Godot Variant. There should be (almost?) no value that is not converted.
-bool convert<Variant>::decode(const YAML::Node &node, Variant &variant) {
-	std::regex type_expression(R"((?:\/)?(\w+))");
-	std::string search = node.Tag();
-	std::sregex_iterator pos(search.begin(), search.end(), type_expression);
-	std::vector<std::string> tokens;
-	std::sregex_iterator end;
-	for (; pos != end; ++pos) {
-		tokens.push_back(pos->str(1));
 	}
-	if (!tokens.empty()) {
-		std::string token_godot = tokens[0];
-		std::transform(token_godot.begin(), token_godot.end(), token_godot.begin(), ::tolower);
-		if (token_godot == "godot" && tokens.size() == 2) {
-			Variant::Type var_type;
-			std::string type_value = tokens[1];
-			std::transform(type_value.begin(), type_value.end(), type_value.begin(), ::tolower);
-			bool found = false;
-			for (std::map<Variant::Type, std::string>::iterator it = type_names.begin(); it != type_names.end(); ++it) {
-				std::string value = it->second;
-				std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-				if (value == type_value) {
-					var_type = it->first;
-					found = true;
-					break;
-				}
-			}
-			if (!found) {
-				var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
-			}
-			switch (var_type) {
-				case Variant::NIL: {
-					variant = Variant();
-					break;
-				}
-				case Variant::VECTOR2: {
-					variant = decode_vector2(node);
-					break;
-				}
-				case Variant::VECTOR3: {
-					variant = decode_vector3(node);
-					break;
-				}
-				case Variant::POOL_INT_ARRAY: {
-					godot::Array array = Array();
-					decode_array(node, array);
-					variant = godot::PoolIntArray(array);
-					break;
-				}
-				case Variant::POOL_REAL_ARRAY: {
-					godot::Array array = Array();
-					decode_array(node, array);
-					variant = godot::PoolRealArray(array);
-					break;
-				}
-				case Variant::POOL_STRING_ARRAY: {
-					godot::Array array = Array();
-					decode_array(node, array);
-					variant = godot::PoolStringArray(array);
-					break;
-				}
-				case Variant::POOL_VECTOR2_ARRAY: {
-					godot::Array array = Array();
-					decode_array(node, array);
-					variant = godot::PoolVector2Array(array);
-					break;
-				}
-				case Variant::POOL_VECTOR3_ARRAY: {
-					godot::Array array = Array();
-					decode_array(node, array);
-					variant = godot::PoolVector3Array(array);
-					break;
-				}
-				case Variant::POOL_COLOR_ARRAY: {
-					godot::Array array = Array();
-					decode_array(node, array);
-					variant = godot::PoolColorArray(array);
-					break;
-				}
-				case Variant::INT: {
-					variant = node.as<int64_t>();
-					break;
-				}
-				case Variant::REAL: {
-					variant = node.as<double>();
-					break;
-				}
-				case Variant::STRING: {
-					variant = String(node.as<std::string>().c_str());
-					break;
-				}
-				case Variant::RECT2: {
-					variant = decode_rect2(node);
-					break;
-				}
-				case Variant::RECT3: {
-					variant = decode_aabb(node);
-					break;
-				}
-				case Variant::TRANSFORM: {
-					variant = decode_transform(node);
-					break;
-				}
-				case Variant::TRANSFORM2D: {
-					variant = decode_transform2d(node);
-					break;
-				}
-				case Variant::PLANE: {
-					variant = decode_plane(node);
-					break;
-				}
-				case Variant::QUAT: {
-					variant = decode_quat(node);
-					break;
-				}
-				case Variant::BASIS: {
-					variant = decode_basis(node);
-					break;
-				}
-				case Variant::COLOR: {
-					variant = decode_color(node);
-					break;
-				}
-				case Variant::NODE_PATH: {
-					variant = decode_node_path(node);
-					break;
-				}
-				default: {
-					std::stringstream message;
-					message << "Variant type " << var_type << " not yet supported";
-					Godot::print(message.str().c_str());
-					return false;
-				}
-			}
-			return true;
-		}
-	} // namespace YAML
-	// Try to determine the type, first match will return, so order will matter.
-	if (node.IsNull()) {
-		variant = Variant();
-		//Godot::print("Determined: Nil");
-		return true;
-	}
-	if (node.IsSequence()) {
-		Array array = Array();
-		//Godot::print("Determined: Array");
-		decode_array(node, array);
-		variant = array;
-		return true;
-	}
-	if (node.IsMap()) {
-		variant = decode_dictionary(node);
-		//Godot::print("Determined: Dictionary");
-		return true;
-	}
-	std::string str;
-	try {
-		str = node.as<std::string>();
-	}
-	catch (::YAML::TypedBadConversion<std::string> err) {
-		Godot::print(String(err.msg.c_str()));
-		return false;
-	}
-	if (node.Tag() != "!")
+
+	////	 Tries to convert a node to a Godot Variant. There should be (almost?) no value that is not converted.
+
+	bool read(ryml::NodeRef const& node, Variant *variant)
 	{
-		try {
-			//Godot::print("Trying: Int64");
-			variant = node.as<int64_t>();
-			//Godot::print("Determined: Int64");
-			return true;
-		} catch (::YAML::TypedBadConversion<int64_t> err) {
-		}
-		try {
-			//Godot::print("Trying: Real");
-			variant = node.as<double>();
-			//Godot::print("Determined: Real");
-			return true;
-		} catch (::YAML::TypedBadConversion<double> err) {
-		}
-		try {
-			//Godot::print("Trying: Boolean");
-			std::string decapitalised_str = str;
-			if (str.length() > 1) {
-				std::transform(str.begin(), str.begin() + 1, decapitalised_str.begin(), ::tolower);
+		if (node.has_val_tag()) {
+			auto tag = node.val_tag();
+			auto tag_string = std::string(tag.data(), tag.len).substr(1);
+			std::regex type_expression(R"((?:\/)?(\w+))");
+			std::sregex_iterator pos(tag_string.begin(), tag_string.end(), type_expression);
+			std::vector<std::string> tokens;
+			std::sregex_iterator end;
+			for (; pos != end; ++pos) {
+				tokens.push_back(pos->str(1));
 			}
-			if (decapitalised_str == "true" || decapitalised_str == "false") {
-				variant = node.as<bool>();
-				//Godot::print("Determined: Boolean");
+			if (!tokens.empty()) {
+				std::string token_godot = tokens[0];
+				std::transform(token_godot.begin(), token_godot.end(), token_godot.begin(), ::tolower);
+				if (token_godot == "godot" && tokens.size() == 2) {
+					Variant::Type var_type;
+					std::string type_value = tokens[1];
+					std::transform(type_value.begin(), type_value.end(), type_value.begin(), ::tolower);
+					bool found = false;
+					for (auto it = TYPE_NAMES.begin(); it != TYPE_NAMES.end(); ++it) {
+						std::string value = it->second;
+						std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+						if (value == type_value) {
+							var_type = it->first;
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						var_type = static_cast<Variant::Type>(std::stoi(tokens[2]));
+					}
+					switch (var_type) {
+						case Variant::NIL: {
+//							Godot::print("Determined: Nil");
+							*variant = Variant();
+							break;
+						}
+						case Variant::VECTOR2: {
+//							Godot::print("Determined: VECTOR2");
+							*variant = decode_vector_2(node);
+							break;
+						}
+						case Variant::VECTOR3: {
+//							Godot::print("Determined: VECTOR3");
+							*variant = decode_vector_3(node);
+							break;
+						}
+						case Variant::POOL_BYTE_ARRAY: {
+//							Godot::print("Determined: POOL_BYTE_ARRAY");
+							*variant = godot::PoolByteArray(decode_array(node));
+							break;
+						}
+						case Variant::POOL_INT_ARRAY: {
+//							Godot::print("Determined: POOL_INT_ARRAY");
+							*variant = godot::PoolIntArray(decode_array(node));
+							break;
+						}
+						case Variant::POOL_REAL_ARRAY: {
+//							Godot::print("Determined: POOL_REAL_ARRAY");
+							*variant = godot::PoolRealArray(decode_array(node));
+							break;
+						}
+						case Variant::POOL_STRING_ARRAY: {
+//							Godot::print("Determined: POOL_STRING_ARRAY");
+							*variant = godot::PoolStringArray(decode_array(node));
+							break;
+						}
+						case Variant::POOL_VECTOR2_ARRAY: {
+//							Godot::print("Determined: POOL_VECTOR2_ARRAY");
+							*variant = godot::PoolVector2Array(decode_array(node));
+							break;
+						}
+						case Variant::POOL_VECTOR3_ARRAY: {
+//							Godot::print("Determined: POOL_VECTOR3_ARRAY");
+							*variant = godot::PoolVector3Array(decode_array(node));
+							break;
+						}
+						case Variant::POOL_COLOR_ARRAY: {
+//							Godot::print("Determined: POOL_COLOR_ARRAY");
+							*variant = godot::PoolColorArray(decode_array(node));
+							break;
+						}
+						case Variant::INT: {
+//							Godot::print("Determined: INT");
+							int64_t value;
+							node >> value;
+							*variant = value;
+							break;
+						}
+						case Variant::REAL: {
+//							Godot::print("Determined: REAL");
+							double value;
+							node >> value;
+							*variant = value;
+							break;
+						}
+						case Variant::STRING: {
+//							Godot::print("Determined: STRING");
+							*variant = std::string(node.val().data(), node.val().len).c_str();
+							break;
+						}
+						case Variant::RECT2: {
+//							Godot::print("Determined: RECT2");
+							*variant = decode_rect_2(node);
+							break;
+						}
+						case Variant::RECT3: {
+//							Godot::print("Determined: RECT3");
+							*variant = decode_aabb(node);
+							break;
+						}
+						case Variant::TRANSFORM: {
+//							Godot::print("Determined: TRANSFORM");
+							*variant = decode_transform(node);
+							break;
+						}
+						case Variant::TRANSFORM2D: {
+//							Godot::print("Determined: TRANSFORM2D");
+							*variant = decode_transform_2_d(node);
+							break;
+						}
+						case Variant::PLANE: {
+//							Godot::print("Determined: PLANE");
+							*variant = decode_plane(node);
+							break;
+						}
+						case Variant::QUAT: {
+//							Godot::print("Determined: QUAT");
+							*variant = decode_quat(node);
+							break;
+						}
+						case Variant::BASIS: {
+//							Godot::print("Determined: BASIS");
+							*variant = decode_basis(node);
+							break;
+						}
+						case Variant::COLOR: {
+//							Godot::print("Determined: COLOR");
+							*variant = decode_color(node);
+							break;
+						}
+						case Variant::NODE_PATH: {
+//							Godot::print("Determined: NODE_PATH");
+							*variant = NodePath(std::string(node.val().data(), node.val().len).c_str());
+							break;
+						}
+						default: {
+							std::stringstream message;
+							message << "Variant type " << var_type << " not yet supported";
+							Godot::print(message.str().c_str());
+							return false;
+						}
+					}
+				}
+			}
+		} else {
+//			Godot::print("No tag");
+			if (node.is_seq()) {
+//				Godot::print("Determined: Array");
+				*variant = decode_array(node);
 				return true;
 			}
-			throw ::YAML::TypedBadConversion<bool>(node.Mark());
-		} catch (::YAML::TypedBadConversion<bool> err) {
+			if (node.is_map()) {
+//				Godot::print("Determined: Dictionary");
+				*variant = decode_dictionary(node);
+				return true;
+			}
+			// Try to determine the type, first match will return, so order will matter.
+            if (!node.is_val_quoted()) {
+                if (node.val_is_null()) {
+                    *variant = Variant();
+//						Godot::print("Determined: Nil");
+                    return true;
+                }
+                int64_t int_val;
+                if (::c4::atox(node.val(), &int_val)) {
+//						Godot::print("Determined: INT");
+                    *variant = int_val;
+                    return true;
+                }
+
+                double float_val;
+                if (::c4::atod(node.val(), &float_val)) {
+//						Godot::print("Determined: float");
+                    *variant = float_val;
+                    return true;
+                }
+
+                bool bool_val;
+                if (from_chars(node.val(), &bool_val)) {
+//						Godot::print("Determined: bool");
+                    *variant = bool_val;
+                    return true;
+                }
+            }
+
+            *variant = std::string(node.val().data(), node.val().len).c_str();
+            return true;
 		}
-	}
-	// Probably catches anything else (except empty values)
-	try {
-		//Godot::print("Guessed: String");
-		variant = String(str.c_str());
 		return true;
-	} catch (::YAML::TypedBadConversion<std::string> err) {
 	}
-	// Will probably never be reached.
-	std::stringstream message;
-	message << "Could not determine type of node at Line " << node.Mark().line + 1 << " Column " << node.Mark().column + 1 << " (Position " << node.Mark().pos << ")";
-	Godot::print(message.str().c_str());
-	return false;
-}
-} // namespace YAML
+} // namespace yaml
+} // namespace c4

@@ -4,16 +4,23 @@ addons:
   homebrew:
     packages:
     - scons
-    - yaml-cpp
     - p7zip
     update: true
 git:
   submodules: false
 script:
-- git submodule update --init --recursive godot-cpp
+- git submodule update --init --recursive
 - cd godot-cpp
 - scons platform=osx headers=godot_headers generate_bindings=yes target=release
 - cd ..
+- cd rapidyaml
+- git apply ../patches/rapidyaml-Allow_stopping_of_parser.patch
+- mkdir build
+- cd build
+- cmake ..
+- make -j4
+- make install DESTDIR=../../rapidyaml-install
+- cd ../..
 - scons platform=osx target=release use_llvm=true
 before_deploy:
 - cd demo/bin
