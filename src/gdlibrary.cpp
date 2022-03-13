@@ -1,5 +1,4 @@
-#include "godotyaml.h"
-#include <core/Array.hpp>
+#include "godot_yaml.h"
 #include <core/Godot.hpp>
 #include <core/String.hpp>
 #include <gen/Reference.hpp>
