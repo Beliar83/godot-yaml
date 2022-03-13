@@ -1,0 +1,74 @@
+Index: src/c4/yml/parse.cpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/c4/yml/parse.cpp b/src/c4/yml/parse.cpp
+--- a/src/c4/yml/parse.cpp	(revision c5e61616dc04c204c7a8b33272bbf595673a72a9)
++++ b/src/c4/yml/parse.cpp	(date 1648129193520)
+@@ -356,7 +356,7 @@
+     m_key_anchor.clear();
+     m_val_anchor_indentation = 0;
+     m_val_anchor.clear();
+-
++    stop_parsing = false;
+     _mark_locations_dirty();
+ }
+ 
+@@ -455,15 +455,15 @@
+     m_root_id = node_id;
+     m_tree = t;
+     _reset();
+-    while( ! _finished_file())
+-    {
++    while (!stop_parsing && !_finished_file()) {
+         _scan_line();
+-        while( ! _finished_line())
++        while (!stop_parsing && !_finished_line())
+             _handle_line();
+-        if(_finished_file())
++        if (stop_parsing || _finished_file())
+             break; // it may have finished because of multiline blocks
+         _line_ended();
+     }
++    if (stop_parsing) return;
+     _handle_finished_file();
+ }
+ 
+@@ -5343,6 +5343,10 @@
+     return !m_newline_offsets_size;
+ }
+ 
++void Parser::stop() {
++    this->stop_parsing = true;
++}
++
+ } // namespace yml
+ } // namespace c4
+ 
+Index: src/c4/yml/parse.hpp
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/c4/yml/parse.hpp b/src/c4/yml/parse.hpp
+--- a/src/c4/yml/parse.hpp	(revision c5e61616dc04c204c7a8b33272bbf595673a72a9)
++++ b/src/c4/yml/parse.hpp	(date 1648129171575)
+@@ -245,6 +245,8 @@
+      * last parsed by this object. */
+     Location val_location(const char *val) const;
+ 
++    void stop();
++
+     /** @} */
+ 
+ private:
+@@ -262,6 +264,8 @@
+ 
+ private:
+ 
++    bool stop_parsing = false;
++
+     using flag_t = int;
+ 
+     static size_t _estimate_capacity(csubstr src) { size_t c = _count_nlines(src); c = c >= 16 ? c : 16; return c; }

@@ -17,6 +17,7 @@ environment:
     - 
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       build_os: windows
+      cmake_command: cmake
       MSBUILD_FLAGS: /verbosity:minimal /maxcpucount
       generator: "Visual Studio 16"
       generator_x64: "Visual Studio 16"
@@ -25,8 +26,13 @@ environment:
     -
       APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
       build_os: linux
+      cmake_command: cmake
       generator_x64: "Unix Makefiles"
-
+    -
+      APPVEYOR_BUILD_WORKER_IMAGE: ubuntu
+      build_os: javascript
+      cmake_command: "emmake cmake"
+      generator_x64: "Unix Makefiles"
 matrix:
   fast_finish: true
   exclude:
@@ -91,34 +97,41 @@ install:
   - cmd: pip install wheel
   - cmd: pip install scons
   - sh: sudo apt-get install scons
+  - ps: >- 
+      if (${env:build_os} -eq "javascript") {
+      git clone https://github.com/emscripten-core/emsdk.git
+      cd emsdk
+      ./emsdk install 2.0.25
+      ./emsdk activate 2.0.25
+      cd ..
+  }
 
 build_script:
-  - cd yaml-cpp
+  - cd rapidyaml
+  - git apply ../patches/rapidyaml-Allow_stopping_of_parser.patch
   - mkdir build
   - cd build
   - cmd: >- 
-        cmake ../ 
+        %cmake_command% ../ 
         -G "%cmake_generator%"
         -A "%cmake_platform%"
-        -DCMAKE_INSTALL_PREFIX="../../yaml-cpp_install" 
-        -DYAML_CPP_BUILD_TESTS="OFF"
-        -DYAML_CPP_BUILD_TOOLS="OFF"
+        -DCMAKE_INSTALL_PREFIX="../../rapidyaml-install" 
+        -DRYML_BUILD_TOOLS="OFF"
         -Wno-dev
   - sh: >-
-        cmake ../ 
+        $cmake_command ../ 
         -G "$cmake_generator"
-        -DCMAKE_INSTALL_PREFIX="../../yaml-cpp_install" 
-        -DYAML_CPP_BUILD_TESTS="OFF"
-        -DYAML_CPP_BUILD_TOOLS="OFF"
+        -DCMAKE_INSTALL_PREFIX="../../rapidyaml-install" 
+        -DRYML_BUILD_TOOLS="OFF"
         -DCMAKE_BUILD_TYPE="$CONFIGURATION"
         -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
         -Wno-dev
   - ps:   #- ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   # build
-  - cmd: cmake --build . --target ALL_BUILD --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: %cmake_command% --build . --target ALL_BUILD --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make
   # install
-  - cmd: cmake --build . --target INSTALL --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: $cmake_command --build . --target INSTALL --config %CONFIGURATION% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make install
   - cd ../..
   - cd godot-cpp
