@@ -1,0 +1,24 @@
+  name: build_godot_cpp
+  description: Builds godot-cpp
+  inputs:
+    platform:
+      description: Target platform
+      required: true
+    target:
+      description: Target to build
+      required: false
+      default: release
+    bits:
+      description: Target bitness
+      required: false
+      default: "64"
+    path:
+      description: Path to build
+      required: false
+      default: "godot-cpp"
+  runs:
+    using: composite
+    steps:
+      - name: build
+        shell: powershell
+        run: scons platform=${{ inputs.platform }} bits=${{ inputs.bits }} generate_bindings=yes target="${{ inputs.target }}" -j 4

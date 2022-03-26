@@ -1,0 +1,52 @@
+name: build_ryaml
+description: Builds rapidyaml
+inputs:
+  generator:
+    description: CMake generator
+    required: true
+  additional_cmake_args:
+    description: Additional CMake arguments
+    required: false
+    default: ""
+  install_prefix:
+    description: Install prefix
+    required: false
+    default: rapidyaml-install
+  cmake_command:
+    description: CMake command
+    required: false
+    default: cmake
+  rapidyaml_path:
+    description: Path to rapidyaml
+    required: false
+    default: rapidyaml
+  configuration:
+    description: Target configuration
+    required: false
+    default: Release
+runs:
+  using: composite
+  steps:
+    - name: apply patch to rapidyaml
+      shell: powershell
+      run: git apply patches rapidyaml-Allow_stopping_of_parser.patch
+      working-directory: ${{ inputs.rapidyaml_path }}
+    - name: configure rapidyaml
+      shell: powershell
+      run: $ {{ inputs.cmake_command }}
+      -G {{ inputs.generator }}      
+      -DCMAKE_BUILD_TYPE={{ inputs.configuration }} 
+      -DCMAKE_INSTALL_PREFIX={{ inputs.install_prefix }} 
+      -DRYML_BUILD_TOOLS="OFF"
+      -Wno-dev
+      {{ inputs.additional_cmake_args }}
+      ..
+      working-directory: ${{ inputs.rapidyaml_path }}/build
+    - name: build rapidyaml
+      shell: powershell
+      run: cmake --build . --config {{ inputs.configuration }}
+      working-directory: ${{ inputs.rapidyaml_path }}/build
+    - name: install rapidyaml
+      shell: powershell
+      run: cmake --build . --config {{ inputs.configuration }} --target install
+      working-directory: ${{ inputs.rapidyaml_path }}/build

@@ -1,0 +1,92 @@
+name: CMake
+
+on:
+  push:
+    branches: [ github_workflows ]
+  pull_request:
+    branches: [ master ]
+#    tags:
+#      - "v*.*.*"
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        bits: [ 64, 32 ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python
+        run: python -m pip install --upgrade pip; pip install wheel; pip install scons
+      - uses: actions/build_ryaml@v1
+        if: $BITS == 64
+        with:
+          generator: Visual Studio 16
+          additional_cmake_args: -A x64
+      - uses: actions/build_ryaml@v1
+        if: $BITS == 32
+        with:
+          generator: Visual Studio 16
+          additional_cmake_args: -A win32
+      - uses: actions/build_ryaml.yml@v1
+        with:
+          platform: windows
+          bits: $BITS
+      - name: build
+        run: scons platform=windows -j4
+      - uses: edgarrc/action-7z@v1
+        with:
+          args: 7z a -t7z -mx9 "${{ GITHUB_WORKSPACE }}/godot-yaml-${{ GITHUB_REF_NAME }}-win-$BITS-${{ CONFIGURATION }}.7z" ${{ GITHUB_WORKSPACE }}/demo/bin
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ GITHUB_REF_NAME }}-win-$BITS-${{ CONFIGURATION }}
+          path: "${{ GITHUB_WORKSPACE }}/godot-yaml-${{ GITHUB_REF_NAME }}-win-$BITS-${{ CONFIGURATION }}.7z"
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python
+        run: sudo apt-get install scons
+      - uses: actions/build_ryaml@v1
+        with:
+          generator: Unix Makefiles
+      - uses: actions/build_ryaml.yml@v1
+        with:
+          platform: linux
+      - name: build
+        run: scons platform=linux -j4
+      - uses: edgarrc/action-7z@v1
+        with:
+          args: 7z a -t7z -mx9 "${{ GITHUB_WORKSPACE }}/godot-yaml-${{ GITHUB_REF_NAME }}-linux-x64-${{ CONFIGURATION }}.7z" ${{ GITHUB_WORKSPACE }}/demo/bin
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ GITHUB_REF_NAME }}-linux-x64-${{ CONFIGURATION }}
+          path: "${{ GITHUB_WORKSPACE }}/godot-yaml-${{ GITHUB_REF_NAME }}-win-$BITS-${{ CONFIGURATION }}.7z"
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Python
+        run: sudo apt-get install scons
+      - uses: actions/build_ryaml@v1
+        with:
+          generator: Unix Makefiles
+      - uses: actions/build_ryaml.yml@v1
+        with:
+          platform: javascript
+          bits: 32
+      - name: build
+        run: scons platform=javascript -j4
+      - uses: edgarrc/action-7z@v1
+        with:
+          args: 7z a -t7z -mx9 "${{ GITHUB_WORKSPACE }}/godot-yaml-${{ GITHUB_REF_NAME }}-wasm32-${{ CONFIGURATION }}.7z" ${{ GITHUB_WORKSPACE }}/demo/bin
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ GITHUB_REF_NAME }}-wasm32-${{ CONFIGURATION }}
+          path: "${{ GITHUB_WORKSPACE }}/godot-yaml-${{ GITHUB_REF_NAME }}-wasm32-${{ CONFIGURATION }}.7z"
+
+
+
