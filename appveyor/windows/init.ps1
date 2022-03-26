@@ -1,1 +1,0 @@
-$ENV:Path=%PYTHON%;%PYTHON%\\bin;%PYTHON%\\Scripts;$ENV:Path
