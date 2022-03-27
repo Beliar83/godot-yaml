@@ -1,0 +1,148 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+    tags:
+      - "v*.*.*"
+jobs:
+  windows:
+    runs-on: windows-2019
+    strategy:
+      matrix:
+        bits: [ 64, 32 ]
+        configuration: [ Release ]
+    steps:
+      - id: configuration_case
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ matrix.configuration }}
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install Python
+        run: python -m pip install --upgrade pip; pip install wheel; pip install scons
+      - uses: ./.github/actions/build_ryaml
+        if: ${{ matrix.bits == 64 }}
+        with:
+          generator: Visual Studio 16 2019
+          configuration: ${{ steps.configuration_case.outputs.capitalized }}
+          additional_cmake_args: -A x64
+      - uses: ./.github/actions/build_ryaml
+        if: ${{ matrix.bits == 32 }}
+        with:
+          generator: Visual Studio 16 2019
+          configuration: ${{ steps.configuration_case.outputs.capitalized }}
+          additional_cmake_args: -A win32
+      - uses: ./.github/actions/build_godot_cpp
+        with:
+          platform: windows
+          target: ${{ steps.configuration_case.outputs.lowercase }}
+          bits: ${{ matrix.bits }}
+      - name: build
+        run: scons platform=windows target=${{ steps.configuration_case.outputs.lowercase }} bits=${{ matrix.bits }} -j4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: godot-yaml-${{ github.ref_name }}-${{ github.run_id }}-win-${{ matrix.bits }}-${{ steps.configuration_case.outputs.lowercase }}
+          path: demo/bin
+  linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [ Release ]
+    steps:
+      - id: configuration_case
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ matrix.configuration }}
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake scons
+      - uses: ./.github/actions/build_ryaml
+        with:
+          generator: Unix Makefiles
+          configuration: ${{ steps.configuration_case.outputs.capitalized }}
+          additional_cmake_args: -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
+      - uses: ./.github/actions/build_godot_cpp
+        with:
+          platform: linux
+          target: ${{ steps.configuration_case.outputs.lowercase }}
+          bits: 64
+      - name: build
+        run: scons platform=linux target=${{ steps.configuration_case.outputs.lowercase }} bits=64 -j4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: godot-yaml-${{ github.ref_name }}-${{ github.run_id }}-linux-x64-${{ steps.configuration_case.outputs.lowercase }}
+          path: demo/bin
+  macos:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        configuration: [ Release ]
+    steps:
+      - id: configuration_case
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ matrix.configuration }}
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install dependencies
+        run: brew update && brew install cmake scons
+      - uses: ./.github/actions/build_ryaml
+        with:
+          generator: Unix Makefiles
+          configuration: ${{ steps.configuration_case.outputs.capitalized }}
+          additional_cmake_args: -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
+      - uses: ./.github/actions/build_godot_cpp
+        with:
+          platform: osx
+          target: ${{ steps.configuration_case.outputs.lowercase }}
+          bits: 64
+      - name: build
+        run: scons platform=osx target=${{ steps.configuration_case.outputs.lowercase }} bits=64 -j4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: godot-yaml-${{ github.ref_name }}-${{ github.run_id }}-macos-x64-${{ steps.configuration_case.outputs.lowercase }}
+          path: demo/bin
+  javascript:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [ Release ]
+    steps:
+      - id: configuration_case
+        uses: ASzc/change-string-case-action@v2
+        with:
+          string: ${{ matrix.configuration }}
+      - name: install emsdk
+        uses: mymindstorm/setup-emsdk@v11
+        with:
+          version: 2.0.25
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y cmake scons
+      - uses: ./.github/actions/build_ryaml
+        with:
+          generator: Unix Makefiles
+          configuration: ${{ steps.configuration_case.outputs.capitalized }}
+          additional_cmake_args: -DCMAKE_POSITION_INDEPENDENT_CODE="ON"
+          cmake_config_command: emcmake cmake
+      - uses: ./.github/actions/build_godot_cpp
+        with:
+          platform: javascript
+          target: ${{ steps.configuration_case.outputs.lowercase }}
+      - name: build
+        run: scons platform=javascript target=${{ steps.configuration_case.outputs.lowercase }} -j4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: godot-yaml-${{ github.ref_name }}-${{ github.run_id }}-wasm32-${{ steps.configuration_case.outputs.lowercase }}
+          path: demo/bin
