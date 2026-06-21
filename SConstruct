@@ -22,8 +22,12 @@ def add_sources(sources, directory):
             sources.append(directory + '/' + file)
 
 if platform == "osx":
-    env.Append(CCFLAGS = ['-g','-O3', '-arch', 'x86_64', '-std=c++14'])
-    env.Append(LINKFLAGS = ['-arch', 'x86_64'])
+    if env["macos_arch"] == "universal":
+        env.Append(LINKFLAGS=["-arch", "x86_64", "-arch", "arm64"])
+        env.Append(CCFLAGS=["-arch", "x86_64", "-arch", "arm64"])
+    else:
+        env.Append(CCFLAGS = ['-g','-O3', '-arch', 'x86_64', '-std=c++14'])
+        env.Append(LINKFLAGS = ['-arch', 'x86_64'])
     env.Append(LIBS=["libryml"])
     final_lib_path = final_lib_path + 'osx/'
 
